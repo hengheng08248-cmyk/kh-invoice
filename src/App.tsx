@@ -1868,8 +1868,8 @@ export default function App() {
             </div>
           )}
 
-          {isAddOpen && <AddTransactionModal />}
-          <TabBar />
+          {isAddOpen && AddTransactionModal()}
+          {TabBar()}
         </div>
       )}
 
@@ -2105,8 +2105,8 @@ export default function App() {
             </div>
           </div>
 
-          {isAddOpen && <AddTransactionModal />}
-          <TabBar />
+          {isAddOpen && AddTransactionModal()}
+          {TabBar()}
         </div>
       )}
 

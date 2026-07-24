@@ -105,6 +105,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(profile.qr_code_url);
   const [shareBusy, setShareBusy] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const qrFileInputRef = useRef<HTMLInputElement>(null);
 
   // Units (shared pattern with Income/Expense)
   const [customUnits, setCustomUnits] = useState<string[]>([]);
@@ -981,6 +982,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           <div className="bg-white rounded-2xl p-5 max-w-xs w-full text-center" onClick={(e) => e.stopPropagation()}>
             <p className="text-sm font-bold mt-2 mb-4 text-slate-800">{tr('បញ្ចូលរូបភាព QR', 'Upload QR Image')}</p>
             <input
+              ref={qrFileInputRef}
               type="file"
               accept="image/*"
               disabled={qrUploadBusy}
@@ -989,11 +991,14 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 if (file) handleQRUpload(file);
               }}
               className="hidden"
-              id="qr-file-upload-input"
             />
-            <label htmlFor="qr-file-upload-input" className="block w-full py-2.5 rounded-lg font-bold text-white text-xs cursor-pointer bg-slate-900">
+            <button
+              onClick={() => qrFileInputRef.current?.click()}
+              disabled={qrUploadBusy}
+              className="block w-full py-2.5 rounded-lg font-bold text-white text-xs cursor-pointer bg-slate-900 disabled:opacity-60"
+            >
               {qrUploadBusy ? tr('កំពុងបញ្ចូល...', 'Uploading...') : tr('ជ្រើសរើសរូបភាព', 'Choose Image')}
-            </label>
+            </button>
             {qrUploadError && (
               <p className="text-[11px] mt-2" style={{ color: COLORS.danger }}>
                 {qrUploadError}
