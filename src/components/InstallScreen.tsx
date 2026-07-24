@@ -4,7 +4,7 @@ interface InstallScreenProps {
   onInstall?: () => void;
 }
 
-export default function InstallScreen({ onInstall }: InstallScreenProps) {
+export const InstallScreen: React.FC<InstallScreenProps> = ({ onInstall }) => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -23,7 +23,7 @@ export default function InstallScreen({ onInstall }: InstallScreenProps) {
       </div>
     </div>
   );
-}
+};
 
 const styles = {
   container: {
