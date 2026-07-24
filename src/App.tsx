@@ -38,7 +38,7 @@ import StockScreen from './components/StockScreen';
 import AccountScreen from './components/AccountScreen';
 import ReportScreen from './components/ReportScreen';
 import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
-import { InstallScreen } from './components/InstallScreen';
+import InstallScreen from './components/InstallScreen';
 import FeatureBanner from './components/FeatureBanner';
 import AuthFeatureCarousel from './components/AuthFeatureCarousel';
 import logoIcon from './assets/logo-icon.png';
