@@ -318,6 +318,23 @@ export default function StockScreen({ lang, onBack }: Props) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-2">
+        {/* Low-stock alert banner */}
+        {summary.lowStock > 0 && (
+          <div
+            className="mb-3 p-3 rounded-xl flex items-center gap-2.5"
+            style={{ backgroundColor: COLORS.dangerTint, borderLeft: `4px solid ${COLORS.danger}` }}
+          >
+            <AlertTriangle size={20} color={COLORS.danger} strokeWidth={2} />\n            <div className="flex-1">
+              <p className="text-xs font-bold" style={{ color: COLORS.danger }}>
+                {tr(`${summary.lowStock} ទំនិញស្តុកទាប`, `${summary.lowStock} low-stock item${summary.lowStock === 1 ? '' : 's'}`)}
+              </p>
+              <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                {tr('ពិនិត្យ និងបញ្ចូលស្តុកបន្ថែម', 'Review and restock soon')}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Summary cards */}
         <div className="grid grid-cols-3 gap-2">
           <div className="p-3 rounded-xl bg-white" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
@@ -392,7 +409,7 @@ export default function StockScreen({ lang, onBack }: Props) {
           {filteredProducts.map((p) => {
             const isLow = p.quantity <= p.low_stock_threshold;
             return (
-              <div key={p.id} className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.stock}` }}>
+              <div key={p.id} className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${isLow ? COLORS.danger : COLORS.stock}` }}>
                 <div className="p-3.5">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
@@ -407,7 +424,7 @@ export default function StockScreen({ lang, onBack }: Props) {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0 ml-2">
+                      <div className="text-right flex-shrink-0 ml-2">
                       <p
                         className="text-sm font-extrabold"
                         style={{ color: isLow ? COLORS.danger : COLORS.navy, ...latinFont }}
@@ -415,13 +432,14 @@ export default function StockScreen({ lang, onBack }: Props) {
                         {p.quantity} {p.unit}
                       </p>
                       {isLow && (
-                        <span
-                          className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5"
-                          style={{ backgroundColor: COLORS.dangerTint, color: COLORS.danger }}
+                        <button
+                          onClick={() => openMoveModal(p, 'in')}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 transition-transform active:scale-95"
+                          style={{ backgroundColor: COLORS.danger, color: '#FFFFFF' }}
                         >
-                          <AlertTriangle size={10} color={COLORS.danger} strokeWidth={2} />
-                          {tr('ស្តុកទាប', 'Low')}
-                        </span>
+                          <ArrowDownCircle size={10} color="#FFFFFF" strokeWidth={2.5} />
+                          {tr('បញ្ចូល', 'Restock')}
+                        </button>
                       )}
                     </div>
                   </div>

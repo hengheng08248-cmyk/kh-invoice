@@ -17,6 +17,8 @@ import {
   Minus,
   DollarSign,
   Percent,
+  FileDown,
+  Copy,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
@@ -249,6 +251,15 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
     setItems(items.filter((i) => i.id !== id));
   };
 
+  const duplicateItem = (id: string) => {
+    const idx = items.findIndex((i) => i.id === id);
+    if (idx === -1) return;
+    const copy = { ...items[idx], id: genItemId() };
+    const next = [...items];
+    next.splice(idx + 1, 0, copy);
+    setItems(next);
+  };
+
   const updateItem = (id: string, field: keyof InvoiceItem, value: string) =>
     setItems(items.map((i) => (i.id === id ? { ...i, [field]: value } : i)));
 
@@ -366,6 +377,13 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
     setSaveBusy(false);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handleSavePdf = () => {
+    setTab('preview');
+    setTimeout(() => {
+      window.print();
+    }, 120);
   };
 
   const handleShare = async () => {
@@ -546,11 +564,16 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 <div key={item.id} className="mb-3 p-3 rounded-lg border bg-gray-50" style={{ borderColor: COLORS.border }}>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-bold text-gray-400">#{idx + 1}</span>
-                    {items.length > 1 && (
-                      <button onClick={() => removeItem(item.id)}>
-                        <Trash2 size={INLINE} color={COLORS.danger} strokeWidth={2} />
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => duplicateItem(item.id)} title={tr('ចម្លងជួរ', 'Duplicate row')} className="transition-transform active:scale-90">
+                        <Copy size={14} color={COLORS.muted} strokeWidth={2} />
                       </button>
-                    )}
+                      {items.length > 1 && (
+                        <button onClick={() => removeItem(item.id)} className="transition-transform active:scale-90">
+                          <Trash2 size={INLINE} color={COLORS.danger} strokeWidth={2} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {products.length > 0 && (
                     <select
@@ -809,6 +832,10 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 <Save size={INLINE} strokeWidth={2} />
                 {saveBusy ? tr('កំពុងរក្សា...', 'Saving...') : tr('រក្សាទុក', 'Save')}
               </button>
+              <button onClick={handleSavePdf} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-white text-xs" style={{ backgroundColor: COLORS.invoice }}>
+                <FileDown size={INLINE} strokeWidth={2} />
+                {tr('រក្សាទុក PDF', 'Save PDF')}
+              </button>
               <button onClick={handleShare} disabled={shareBusy} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-white text-xs bg-amber-500">
                 <Share2 size={INLINE} strokeWidth={2} />
                 {shareBusy ? tr('កំពុងបង្កើត...', 'Sharing...') : tr('ចែករំលែក', 'Share')}
@@ -819,6 +846,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           /* =========================================================
              INVOICE PREVIEW MODE
              ========================================================= */
+          <div id="invoice-print-area" className="banner-slide-in">
           <div ref={previewRef} className="bg-white rounded-2xl overflow-hidden border" style={{ boxShadow: '0 4px 20px rgba(24,41,62,0.05)', borderColor: COLORS.border }}>
 
             {/* Banner ផ្នែកខាងលើ */}
@@ -933,6 +961,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 </div>
               )}
             </div>
+          </div>
           </div>
         )}
       </div>

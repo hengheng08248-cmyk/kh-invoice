@@ -15,7 +15,9 @@
     visibility: hidden;
   }
   #report-print-area,
-  #report-print-area * {
+  #report-print-area *,
+  #invoice-print-area,
+  #invoice-print-area * {
     visibility: visible;
   }
   #report-print-area {
@@ -25,4 +27,20 @@
     width: 100%;
     padding: 16px;
   }
+  #invoice-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+  }
+}
+
+/* Auto-play feature banner entrance animation */
+@keyframes bannerSlideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.banner-slide-in {
+  animation: bannerSlideIn 0.5s ease-out;
 }

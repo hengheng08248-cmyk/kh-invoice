@@ -39,6 +39,7 @@ import AccountScreen from './components/AccountScreen';
 import ReportScreen from './components/ReportScreen';
 import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
 import InstallScreen from './components/InstallScreen';
+import FeatureBanner from './components/FeatureBanner';
 
 
 
@@ -1643,6 +1644,9 @@ export default function App() {
               </div>
             )}
 
+            {/* Feature Banner — auto-play educational tips */}
+            <FeatureBanner lang={lang} onNavigate={(s) => setCurrentScreen(s)} />
+
             {/* Quick Actions */}
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
               {lang === 'KH' ? 'មុខងាររហ័ស' : 'Quick Actions'}
@@ -2018,9 +2022,16 @@ export default function App() {
             )}
 
             {/* Transaction table */}
-            <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
-              {lang === 'KH' ? 'តារាងប្រតិបត្តិការ' : 'Transactions'}
-            </p>
+            <div className="flex items-center justify-between mt-5 mb-2">
+              <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
+                {lang === 'KH' ? 'តារាងប្រតិបត្តិការ' : 'Transactions'}
+              </p>
+              {!transactionsLoading && filteredTransactions.length > 0 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: COLORS.navyTint, color: COLORS.navy, ...latinFont }}>
+                  {filteredTransactions.length}
+                </span>
+              )}
+            </div>
             <div
               className="bg-white rounded-2xl overflow-hidden border"
               style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)', borderColor: COLORS.border }}
@@ -2046,9 +2057,20 @@ export default function App() {
                 </p>
               )}
               {!transactionsLoading && filteredTransactions.length === 0 && (
-                <p className="text-xs text-center py-4" style={{ color: COLORS.muted }}>
-                  {lang === 'KH' ? 'មិនមានទិន្នន័យក្នុងចន្លោះនេះទេ' : 'No data in this range'}
-                </p>
+                <div className="text-center py-8">
+                  <IconBadge icon={Wallet} size={ACTION} tint="navy" shape="rounded" className="mx-auto" />
+                  <p className="text-xs mt-3" style={{ color: COLORS.muted }}>
+                    {lang === 'KH' ? 'មិនមានទិន្នន័យក្នុងចន្លោះនេះទេ' : 'No data in this range'}
+                  </p>
+                  <button
+                    onClick={() => openAddModal('income')}
+                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white"
+                    style={{ backgroundColor: COLORS.gold }}
+                  >
+                    <Plus size={14} color="#FFFFFF" strokeWidth={2.5} />
+                    {lang === 'KH' ? 'បន្ថែម' : 'Add'}
+                  </button>
+                </div>
               )}
               {filteredTransactions.map((tItem, i) => (
                 <div
