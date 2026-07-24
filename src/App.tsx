@@ -40,6 +40,8 @@ import ReportScreen from './components/ReportScreen';
 import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
 import InstallScreen from './components/InstallScreen';
 import FeatureBanner from './components/FeatureBanner';
+import AuthFeatureCarousel from './components/AuthFeatureCarousel';
+import logoIcon from './assets/logo-icon.png';
 
 
 
@@ -945,30 +947,42 @@ export default function App() {
          SIGN IN
          ============================================ */}
       {currentScreen === 'SignIn' && (
-        <div className="flex flex-col justify-center items-center p-4 min-h-[85vh]">
-          <div
-            className="w-full max-w-sm rounded-2xl overflow-hidden bg-white"
-            style={{ boxShadow: '0 6px 20px rgba(24,41,62,0.07)' }}
-          >
-            <div
-              className="w-full flex flex-col items-center p-6"
-              style={{
-                background: `linear-gradient(180deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})`,
-              }}
+        <div
+          className="flex flex-col justify-center items-center p-4 min-h-[85vh]"
+          style={{
+            background: `radial-gradient(120% 90% at 50% 0%, ${COLORS.navyTint} 0%, ${COLORS.bgApp} 60%, ${COLORS.bgApp} 100%)`,
+          }}
+        >
+          {/* Logo — no card, big and centered, description below */}
+          <div className="flex flex-col items-center mt-2 mb-1">
+            <img
+              src={logoIcon}
+              alt="KH Invoice"
+              className="w-28 h-28 object-contain"
+              style={{ filter: 'drop-shadow(0 10px 18px rgba(12,68,124,0.22))' }}
+            />
+            <span
+              className="text-[26px] font-extrabold tracking-wide mt-2"
+              style={{ color: COLORS.navy, ...latinFont }}
             >
-              <IconBadge icon={Receipt} size={ACTION} tint="gold" shape="rounded" />
-              <span
-                className="text-2xl font-extrabold text-white tracking-wide mt-1.5"
-                style={latinFont}
-              >
-                KH INVOICE
-              </span>
-              <span className="text-xs text-white/75 text-center mt-1 leading-relaxed">
-                {t.tagline}
-              </span>
-            </div>
+              KH INVOICE
+            </span>
+            <span
+              className="text-xs text-center mt-1 leading-relaxed max-w-[260px]"
+              style={{ color: COLORS.muted }}
+            >
+              {t.tagline}
+            </span>
+          </div>
 
-            <div className="p-5">
+          {/* Auto-play feature highlights — same visual language as the Home banner */}
+          <AuthFeatureCarousel lang={lang} />
+
+          <div
+            className="w-full max-w-sm rounded-3xl overflow-hidden bg-white mt-4"
+            style={{ boxShadow: '0 10px 28px rgba(24,41,62,0.10)', border: `1px solid ${COLORS.border}` }}
+          >
+            <div className="p-6">
               <h2 className="text-lg font-bold" style={{ color: COLORS.navy }}>
                 {t.login}
               </h2>
