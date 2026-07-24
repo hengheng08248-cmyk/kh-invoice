@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const SignInScreen: React.FC = () => {
+export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -52,7 +52,7 @@ export const SignInScreen: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 const styles = {
   container: {
