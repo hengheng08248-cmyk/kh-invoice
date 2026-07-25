@@ -27,6 +27,11 @@ import {
   Share2,
   X,
   CheckCircle2,
+  Lock,
+  LockOpen,
+  Clock,
+  Maximize2,
+  HelpCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
@@ -254,6 +259,16 @@ export default function App() {
 
   const trialDaysRemaining = getTrialDaysRemaining(profile?.trial_started_at ?? null);
   const showTrialBanner = trialDaysRemaining > 0 && trialDaysRemaining <= 7;
+
+  // ---------- Screen "lock" toggles ----------
+  // Each transaction/list area starts locked (no scroll) so the whole
+  // screen fits on one view. Tapping the lock icon unlocks that one
+  // area so it can be scrolled when it has more items than fit.
+  const [financeTxLocked, setFinanceTxLocked] = useState(true);
+  // Dedicated full-screen "see everything" view — separate from the
+  // locked dashboard, always scrollable top to bottom.
+  const [homeShowAllTx, setHomeShowAllTx] = useState(false);
+  const [financeShowAllTx, setFinanceShowAllTx] = useState(false);
 
   const loadProfile = async (userId: string): Promise<Profile | null> => {
     const { data, error } = await supabase
@@ -1443,63 +1458,74 @@ export default function App() {
                   <Languages size={14} color="#FFFFFF" strokeWidth={2} />
                   {lang === 'KH' ? 'ខ្មែរ' : 'EN'}
                 </button>
+                <IconBtn icon={HelpCircle} tint="light" aria-label={lang === 'KH' ? 'របៀបប្រើ' : 'How to use'} onClick={() => setShowTips(true)} />
                 <IconBtn icon={Bell} tint="light" aria-label="Notifications" onClick={() => setShowSubscription(true)} />
                 <IconBtn icon={LogOut} tint="light" onClick={handleLogout} aria-label="Logout" />
               </div>
             </div>
-            <p className="mt-2.5 text-xs font-semibold text-white/80">
-              {new Date().toLocaleDateString(lang === 'KH' ? 'km-KH' : 'en-US', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}{' '}
-              | {timeStr}
-            </p>
+            <div className="flex items-center justify-between mt-2.5 gap-2">
+              <p className="text-xs font-semibold text-white/80 truncate min-w-0">
+                {new Date().toLocaleDateString(lang === 'KH' ? 'km-KH' : 'en-US', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                })}{' '}
+                | {timeStr}
+              </p>
+              <button
+                onClick={() => setHomeShowAllTx(true)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold flex-shrink-0"
+                style={{ backgroundColor: 'rgba(255,255,255,0.18)', color: '#FFFFFF' }}
+                aria-label={lang === 'KH' ? 'មើលប្រតិបត្តិការទាំងអស់' : 'View all transactions'}
+              >
+                <Receipt size={12} color="#FFFFFF" strokeWidth={2.2} />
+                {lang === 'KH' ? 'ប្រតិបត្តិការ' : 'Transactions'}
+              </button>
+            </div>
           </div>
 
-          {/* Trial banner */}
-          {showTrialBanner && (
+          {/* Trial + Install — merged into one slim strip so it never
+             crowds the header/date, and only ever takes one row */}
+          {(showTrialBanner || showInstallBanner) && (
             <div
-              className="py-1.5 px-4 text-center text-xs font-semibold"
-              style={{
-                backgroundColor: COLORS.goldTint,
-                color: COLORS.goldDark,
-              }}
+              className="mx-3.5 mt-2.5 flex items-center gap-2 px-3 py-1.5 rounded-xl"
+              style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.1)', border: `1px solid ${COLORS.border}` }}
             >
-              {lang === 'KH'
-                ? `រយៈពេលសាកល្បងឥតគិតថ្លៃ — នៅសល់ ${toKhmerNumber(trialDaysRemaining)} ថ្ងៃទៀតប៉ុណ្ណោះ`
-                : `Free trial — only ${trialDaysRemaining} day${trialDaysRemaining === 1 ? '' : 's'} remaining`}
+              {showInstallBanner ? (
+                <img src="/icon-192.png" alt="" className="w-6 h-6 rounded-md flex-shrink-0" />
+              ) : (
+                <Clock size={14} color={COLORS.goldDark} strokeWidth={2} className="flex-shrink-0" />
+              )}
+              <p className="flex-1 min-w-0 truncate text-[11px] font-semibold" style={{ color: COLORS.navy }}>
+                {showInstallBanner
+                  ? lang === 'KH' ? 'ដំឡើង KH Invoice ជា App' : 'Install KH Invoice App'
+                  : lang === 'KH'
+                  ? `សាកល្បង — នៅសល់ ${toKhmerNumber(trialDaysRemaining)} ថ្ងៃ`
+                  : `Trial — ${trialDaysRemaining} day${trialDaysRemaining === 1 ? '' : 's'} left`}
+              </p>
+              {showInstallBanner && (
+                <>
+                  <button
+                    onClick={handleInstallClick}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-white text-[11px] flex-shrink-0"
+                    style={{ backgroundColor: COLORS.gold }}
+                  >
+                    <Download size={12} color="#FFFFFF" strokeWidth={2.5} />
+                    {lang === 'KH' ? 'ដំឡើង' : 'Install'}
+                  </button>
+                  <button onClick={dismissInstallBanner} aria-label="Dismiss" className="flex-shrink-0">
+                    <X size={15} color={COLORS.muted} strokeWidth={2} />
+                  </button>
+                </>
+              )}
             </div>
           )}
 
-          {/* Install App banner */}
-          {showInstallBanner && (
-            <div className="mx-3.5 mt-3 flex items-center gap-2.5 p-3 rounded-2xl" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.1)', border: `1px solid ${COLORS.border}` }}>
-              <img src="/icon-192.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'ដំឡើង KH Invoice ជា App' : 'Install KH Invoice App'}
-                </p>
-                <p className="text-[10px]" style={{ color: COLORS.muted }}>
-                  {lang === 'KH' ? 'បើកលឿន ប្រើក្រៅបណ្តាញបាន' : 'Faster access, works offline'}
-                </p>
-              </div>
-              <button
-                onClick={handleInstallClick}
-                className="flex items-center gap-1 px-3 py-2 rounded-lg font-bold text-white text-xs flex-shrink-0"
-                style={{ backgroundColor: COLORS.gold }}
-              >
-                <Download size={13} color="#FFFFFF" strokeWidth={2.5} />
-                {lang === 'KH' ? 'ដំឡើង' : 'Install'}
-              </button>
-              <button onClick={dismissInstallBanner} aria-label="Dismiss" className="flex-shrink-0">
-                <X size={16} color={COLORS.muted} strokeWidth={2} />
-              </button>
-            </div>
-          )}
-
-          {/* Content */}
-          <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-24">
+          {/* Content — permanently locked, never drags up/down.
+             Use the "Transactions" pill above to see everything in
+             a dedicated, fully scrollable full-screen view. */}
+          <div className="relative flex-1 min-h-0">
+          <div className="app-scroll h-full overflow-hidden p-3.5 pb-24">
             {/* Balance card */}
             <div
               className="relative p-6 rounded-3xl overflow-hidden"
@@ -1660,19 +1686,20 @@ export default function App() {
               </div>
             </div>
 
-            {/* Top customers by invoice amount */}
+            {/* Top customers by invoice amount — condensed to top 3 */}
             {topCustomers.length > 0 && (
               <div
-                className="p-4 rounded-2xl mt-2.5"
+                className="p-4 rounded-2xl mt-3"
                 style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
               >
-                <p className="text-sm font-bold mb-3.5" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'អតិថិជនកំពូល (តាមទឹកប្រាក់វិក្កយបត្រ)' : 'Top Customers by Invoice Amount'}
+                <p className="text-sm font-bold mb-3" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'អតិថិជនកំពូល' : 'Top Customers'}
                 </p>
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   {(() => {
-                    const maxTotal = Math.max(...topCustomers.map((c) => c.total), 1);
-                    return topCustomers.map((c) => (
+                    const top3 = topCustomers.slice(0, 3);
+                    const maxTotal = Math.max(...top3.map((c) => c.total), 1);
+                    return top3.map((c) => (
                       <div key={c.name}>
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-xs font-semibold truncate mr-2" style={{ color: COLORS.navy }}>
@@ -1682,9 +1709,9 @@ export default function App() {
                             ${c.total.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                           </span>
                         </div>
-                        <div className="w-full h-2.5 rounded-full" style={{ backgroundColor: COLORS.invoiceTint }}>
+                        <div className="w-full h-2 rounded-full" style={{ backgroundColor: COLORS.invoiceTint }}>
                           <div
-                            className="h-2.5 rounded-full"
+                            className="h-2 rounded-full"
                             style={{
                               width: `${Math.max(4, (c.total / maxTotal) * 100)}%`,
                               background: 'linear-gradient(90deg, #4FA3E3, #2E86C1)',
@@ -1697,31 +1724,6 @@ export default function App() {
                 </div>
               </div>
             )}
-
-            {/* Tips entry point — static card, does not move or blend with
-                the navy header. Tapping it opens the full-screen, manually
-                navigated tips guide (see showTips below). */}
-            <button
-              onClick={() => setShowTips(true)}
-              className="w-full flex items-center gap-2.5 mt-3 p-3 rounded-2xl text-left"
-              style={{ backgroundColor: '#FFFFFF', border: `1px solid ${COLORS.border}`, boxShadow: '0 2px 8px rgba(12,68,124,0.06)' }}
-            >
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: COLORS.navyTint }}
-              >
-                <BarChart3 size={18} color={COLORS.navy} strokeWidth={2} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'របៀបប្រើប្រាស់ App' : 'How to use the app'}
-                </p>
-                <p className="text-[11px]" style={{ color: COLORS.muted }}>
-                  {lang === 'KH' ? 'មើលគន្លឹះប្រើប្រាស់ជាជំហានៗ' : 'View step-by-step tips'}
-                </p>
-              </div>
-              <ChevronRight size={16} color={COLORS.muted} strokeWidth={2} />
-            </button>
 
             {/* Quick Actions */}
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
@@ -1781,10 +1783,23 @@ export default function App() {
               </button>
             </div>
 
-            {/* Recent Transactions */}
-            <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
-              {lang === 'KH' ? 'ប្រវត្តិប្រតិបត្តិការចុងក្រោយ' : 'Recent Transactions'}
-            </p>
+            {/* Recent Transactions — short preview only; tap "see all"
+               for the full, scrollable list */}
+            <div className="flex items-center justify-between mt-5 mb-2">
+              <p className="text-sm font-bold" style={{ color: COLORS.navy }}>
+                {lang === 'KH' ? 'ប្រតិបត្តិការចុងក្រោយ' : 'Recent Transactions'}
+              </p>
+              {transactions.length > 0 && (
+                <button
+                  onClick={() => setHomeShowAllTx(true)}
+                  className="flex items-center gap-0.5 text-[11px] font-bold"
+                  style={{ color: COLORS.gold }}
+                >
+                  {lang === 'KH' ? 'មើលទាំងអស់' : 'See all'}
+                  <ChevronRight size={13} color={COLORS.gold} strokeWidth={2.5} />
+                </button>
+              )}
+            </div>
             <div className="bg-white rounded-2xl py-1" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
               {transactionsLoading && (
                 <p className="text-xs text-center py-4" style={{ color: COLORS.muted }}>
@@ -1796,12 +1811,12 @@ export default function App() {
                   {lang === 'KH' ? 'មិនទាន់មានប្រតិបត្តិការនៅឡើយទេ' : 'No transactions yet'}
                 </p>
               )}
-              {transactions.map((tItem, i) => (
+              {transactions.slice(0, 5).map((tItem, i, arr) => (
                 <div
                   key={tItem.id}
                   className="flex items-center px-3.5 py-2.5"
                   style={{
-                    borderBottom: i < transactions.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+                    borderBottom: i < arr.length - 1 ? `1px solid ${COLORS.border}` : 'none',
                   }}
                 >
                   <div className="mr-3">
@@ -1831,7 +1846,20 @@ export default function App() {
                   </span>
                 </div>
               ))}
+              {transactions.length > 5 && (
+                <button
+                  onClick={() => setHomeShowAllTx(true)}
+                  className="w-full flex items-center justify-center gap-1 py-2.5 text-xs font-bold"
+                  style={{ color: COLORS.navy, borderTop: `1px solid ${COLORS.border}` }}
+                >
+                  {lang === 'KH'
+                    ? `មើលទាំងអស់ (${toKhmerNumber(transactions.length)})`
+                    : `View all ${transactions.length}`}
+                  <ChevronRight size={13} color={COLORS.navy} strokeWidth={2.5} />
+                </button>
+              )}
             </div>
+          </div>
           </div>
 
           {/* Exchange modal */}
@@ -1952,6 +1980,72 @@ export default function App() {
             onClose={() => setShowTips(false)}
             onNavigate={(s) => setCurrentScreen(s)}
           />
+
+          {/* Dedicated full-screen view — every transaction on record,
+             always scrollable top to bottom */}
+          {homeShowAllTx && (
+            <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
+              <div
+                className="px-4 pt-5 pb-4 flex items-center gap-3 flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})` }}
+              >
+                <button
+                  onClick={() => setHomeShowAllTx(false)}
+                  className="flex items-center justify-center"
+                  style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)' }}
+                >
+                  <ArrowLeft size={INLINE} color="#FFFFFF" strokeWidth={2} />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-base">
+                    {lang === 'KH' ? 'ប្រតិបត្តិការទាំងអស់' : 'All Transactions'}
+                  </p>
+                  <p className="text-white/70 text-xs">
+                    {transactions.length} {lang === 'KH' ? 'ជួរ' : 'rows'}
+                  </p>
+                </div>
+              </div>
+              <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-6">
+                <div className="bg-white rounded-2xl py-1" style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}>
+                  {transactions.length === 0 && (
+                    <p className="text-xs text-center py-8" style={{ color: COLORS.muted }}>
+                      {lang === 'KH' ? 'មិនទាន់មានប្រតិបត្តិការនៅឡើយទេ' : 'No transactions yet'}
+                    </p>
+                  )}
+                  {transactions.map((tItem, i) => (
+                    <div
+                      key={tItem.id}
+                      className="flex items-center px-3.5 py-2.5"
+                      style={{ borderBottom: i < transactions.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}
+                    >
+                      <div className="mr-3">
+                        <IconBadge
+                          icon={tItem.type === 'income' ? TrendingUp : TrendingDown}
+                          size={INLINE}
+                          tint={tItem.type === 'income' ? 'success' : 'danger'}
+                          shape="rounded"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold" style={{ color: COLORS.navy }}>
+                          {tItem.description}
+                        </p>
+                        <p className="text-xs" style={{ color: COLORS.muted }}>
+                          {tItem.quantity} {tItem.unit} • {tItem.transaction_date}
+                        </p>
+                      </div>
+                      <span
+                        className="text-sm font-bold"
+                        style={{ color: tItem.type === 'income' ? COLORS.success : COLORS.danger, ...latinFont }}
+                      >
+                        {moneyDisplay(tItem)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -2000,9 +2094,29 @@ export default function App() {
             >
               <BarChart3 size={INLINE} color="#FFFFFF" strokeWidth={2} />
             </button>
+            <button
+              onClick={() => setFinanceTxLocked((v) => !v)}
+              aria-label={financeTxLocked ? (lang === 'KH' ? 'ដោះសោដើម្បីអូស' : 'Unlock to scroll') : (lang === 'KH' ? 'ចាក់សោអេក្រង់' : 'Lock screen')}
+              className="flex items-center justify-center"
+              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)' }}
+            >
+              {financeTxLocked ? <Lock size={INLINE} color="#FFFFFF" strokeWidth={2} /> : <LockOpen size={INLINE} color="#FFFFFF" strokeWidth={2} />}
+            </button>
+            <button
+              onClick={() => setFinanceShowAllTx(true)}
+              aria-label={lang === 'KH' ? 'មើលពេញអេក្រង់' : 'View full screen'}
+              className="flex items-center justify-center"
+              style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)' }}
+            >
+              <Maximize2 size={INLINE} color="#FFFFFF" strokeWidth={2} />
+            </button>
           </div>
 
-          <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
+          {/* Locked by default so everything fits one screen; tap the
+             lock icon above to unlock and scroll the transaction list
+             when it has more rows than fit */}
+          <div className="relative flex-1 min-h-0">
+          <div className={`app-scroll h-full p-3.5 pb-24 -mt-4 ${financeTxLocked ? 'overflow-hidden' : 'overflow-y-auto'}`}>
             {/* Currency view toggle — filter income/expense by USD, KHR (Riel), or both */}
             <div className="flex gap-2 mb-2.5">
               {[
@@ -2186,9 +2300,94 @@ export default function App() {
               ))}
             </div>
           </div>
+          {financeTxLocked && (
+            <div
+              className="pointer-events-none absolute left-0 right-0 bottom-0 h-14"
+              style={{ background: `linear-gradient(to top, ${COLORS.bgApp}, rgba(244,246,248,0))` }}
+            />
+          )}
+          </div>
 
           {isAddOpen && AddTransactionModal()}
           {TabBar()}
+
+          {/* Dedicated full-screen view — every filtered transaction,
+             always scrollable top to bottom */}
+          {financeShowAllTx && (
+            <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
+              <div
+                className="px-4 pt-5 pb-4 flex items-center gap-3 flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})` }}
+              >
+                <button
+                  onClick={() => setFinanceShowAllTx(false)}
+                  className="flex items-center justify-center"
+                  style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.18)' }}
+                >
+                  <ArrowLeft size={INLINE} color="#FFFFFF" strokeWidth={2} />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-base">
+                    {lang === 'KH' ? 'ប្រតិបត្តិការទាំងអស់' : 'All Transactions'}
+                  </p>
+                  <p className="text-white/70 text-xs">
+                    {filteredTransactions.length} {lang === 'KH' ? 'ជួរ' : 'rows'}
+                  </p>
+                </div>
+              </div>
+              <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-6">
+                <div
+                  className="bg-white rounded-2xl overflow-hidden border"
+                  style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)', borderColor: COLORS.border }}
+                >
+                  <div className="flex px-3 py-2 border-b sticky top-0" style={{ backgroundColor: '#FAFAF8', borderColor: COLORS.border }}>
+                    <span className="text-[10px] font-bold flex-[1.2]" style={{ color: COLORS.muted }}>
+                      {lang === 'KH' ? 'ថ្ងៃទី' : 'Date'}
+                    </span>
+                    <span className="text-[10px] font-bold flex-[2]" style={{ color: COLORS.muted }}>
+                      Description
+                    </span>
+                    <span className="text-[10px] font-bold flex-1 text-center" style={{ color: COLORS.muted }}>
+                      {lang === 'KH' ? 'ចំនួន' : 'Qty'}
+                    </span>
+                    <span className="text-[10px] font-bold flex-[1.3] text-right" style={{ color: COLORS.muted }}>
+                      {lang === 'KH' ? 'សរុប' : 'Total'}
+                    </span>
+                  </div>
+                  {filteredTransactions.length === 0 && (
+                    <p className="text-xs text-center py-8" style={{ color: COLORS.muted }}>
+                      {lang === 'KH' ? 'មិនមានទិន្នន័យក្នុងចន្លោះនេះទេ' : 'No data in this range'}
+                    </p>
+                  )}
+                  {filteredTransactions.map((tItem, i) => (
+                    <div
+                      key={tItem.id}
+                      className="flex items-center px-3 py-2.5"
+                      style={{ borderBottom: i < filteredTransactions.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}
+                    >
+                      <span className="text-[11px] flex-[1.2]" style={{ color: COLORS.navy, ...latinFont }}>
+                        {tItem.transaction_date}
+                      </span>
+                      <div className="flex-[2] pr-1">
+                        <p className="text-[11px] font-semibold truncate" style={{ color: COLORS.navy }}>
+                          {tItem.description}
+                        </p>
+                      </div>
+                      <span className="text-[11px] flex-1 text-center" style={{ color: COLORS.muted }}>
+                        {tItem.quantity} {tItem.unit}
+                      </span>
+                      <span
+                        className="text-[11px] font-bold flex-[1.3] text-right"
+                        style={{ color: tItem.type === 'income' ? COLORS.success : COLORS.danger, ...latinFont }}
+                      >
+                        {moneyDisplay(tItem)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
