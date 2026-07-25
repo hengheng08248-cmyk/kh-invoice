@@ -178,6 +178,7 @@ export default function App() {
   const [productCount, setProductCount] = useState<number | null>(null);
   const [topCustomers, setTopCustomers] = useState<{ name: string; total: number }[]>([]);
   const [showSubscription, setShowSubscription] = useState(false);
+  const [showTips, setShowTips] = useState(false);
   const [customUnits, setCustomUnits] = useState<string[]>([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [addType, setAddType] = useState<'income' | 'expense'>('income');
@@ -672,6 +673,35 @@ export default function App() {
         </div>
 
         <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>
+          {lang === 'KH' ? 'រូបិយប័ណ្ណ' : 'Currency'}
+        </label>
+        <div
+          className="flex rounded-lg border p-1 mb-4"
+          style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8' }}
+        >
+          <button
+            onClick={() => setAddCurrency('USD')}
+            className="flex-1 py-2.5 rounded-md text-sm font-bold"
+            style={{
+              backgroundColor: addCurrency === 'USD' ? COLORS.navy : 'transparent',
+              color: addCurrency === 'USD' ? '#FFFFFF' : COLORS.muted,
+            }}
+          >
+            $ USD
+          </button>
+          <button
+            onClick={() => setAddCurrency('KHR')}
+            className="flex-1 py-2.5 rounded-md text-sm font-bold"
+            style={{
+              backgroundColor: addCurrency === 'KHR' ? COLORS.navy : 'transparent',
+              color: addCurrency === 'KHR' ? '#FFFFFF' : COLORS.muted,
+            }}
+          >
+            ៛ KHR
+          </button>
+        </div>
+
+        <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>
           {lang === 'KH' ? 'ថ្ងៃទី' : 'Date'}
         </label>
         <input
@@ -751,38 +781,22 @@ export default function App() {
         <label className="text-xs font-semibold block mb-1.5" style={{ color: COLORS.navy }}>
           {lang === 'KH' ? 'តម្លៃ (មួយឯកតា)' : 'Price (per unit)'}
         </label>
-        <div className="flex gap-2 mb-3">
+        <div className="flex mb-3 rounded-lg border overflow-hidden" style={{ borderColor: COLORS.border }}>
+          <span
+            className="flex items-center px-3 text-sm font-bold flex-shrink-0"
+            style={{ backgroundColor: COLORS.navyTint, color: COLORS.navy, ...latinFont }}
+          >
+            {addCurrency === 'USD' ? '$' : '៛'}
+          </span>
           <input
             type="number"
             inputMode="decimal"
             value={addUnitPrice}
             onChange={(e) => setAddUnitPrice(e.target.value)}
             placeholder="0.00"
-            className="flex-1 rounded-lg border px-3 py-2.5 text-sm outline-none"
-            style={{ borderColor: COLORS.border, backgroundColor: '#FAFAF8', color: COLORS.navy, ...latinFont }}
+            className="flex-1 min-w-0 px-3 py-2.5 text-sm outline-none"
+            style={{ backgroundColor: '#FAFAF8', color: COLORS.navy, ...latinFont }}
           />
-          <button
-            onClick={() => setAddCurrency('USD')}
-            className="px-3 rounded-lg border text-sm font-bold"
-            style={{
-              borderColor: COLORS.border,
-              backgroundColor: addCurrency === 'USD' ? COLORS.gold : '#FAFAF8',
-              color: addCurrency === 'USD' ? '#FFFFFF' : COLORS.navy,
-            }}
-          >
-            USD
-          </button>
-          <button
-            onClick={() => setAddCurrency('KHR')}
-            className="px-3 rounded-lg border text-sm font-bold"
-            style={{
-              borderColor: COLORS.border,
-              backgroundColor: addCurrency === 'KHR' ? COLORS.gold : '#FAFAF8',
-              color: addCurrency === 'KHR' ? '#FFFFFF' : COLORS.navy,
-            }}
-          >
-            KHR
-          </button>
         </div>
 
         <p className="text-xs mb-3" style={{ color: COLORS.muted }}>
@@ -1391,7 +1405,7 @@ export default function App() {
          HOME
          ============================================ */}
       {currentScreen === 'Home' && (
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
+        <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: COLORS.bgApp }}>
           {/* Header */}
           <div
             className="px-4 pt-4 pb-4"
@@ -1485,7 +1499,7 @@ export default function App() {
           )}
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-3.5 pb-24">
+          <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-24">
             {/* Balance card */}
             <div
               className="relative p-6 rounded-3xl overflow-hidden"
@@ -1684,8 +1698,30 @@ export default function App() {
               </div>
             )}
 
-            {/* Feature Banner — auto-play educational tips */}
-            <FeatureBanner lang={lang} onNavigate={(s) => setCurrentScreen(s)} />
+            {/* Tips entry point — static card, does not move or blend with
+                the navy header. Tapping it opens the full-screen, manually
+                navigated tips guide (see showTips below). */}
+            <button
+              onClick={() => setShowTips(true)}
+              className="w-full flex items-center gap-2.5 mt-3 p-3 rounded-2xl text-left"
+              style={{ backgroundColor: '#FFFFFF', border: `1px solid ${COLORS.border}`, boxShadow: '0 2px 8px rgba(12,68,124,0.06)' }}
+            >
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: COLORS.navyTint }}
+              >
+                <BarChart3 size={18} color={COLORS.navy} strokeWidth={2} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'របៀបប្រើប្រាស់ App' : 'How to use the app'}
+                </p>
+                <p className="text-[11px]" style={{ color: COLORS.muted }}>
+                  {lang === 'KH' ? 'មើលគន្លឹះប្រើប្រាស់ជាជំហានៗ' : 'View step-by-step tips'}
+                </p>
+              </div>
+              <ChevronRight size={16} color={COLORS.muted} strokeWidth={2} />
+            </button>
 
             {/* Quick Actions */}
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>
@@ -1910,6 +1946,12 @@ export default function App() {
 
           {isAddOpen && AddTransactionModal()}
           {TabBar()}
+          <FeatureBanner
+            lang={lang}
+            open={showTips}
+            onClose={() => setShowTips(false)}
+            onNavigate={(s) => setCurrentScreen(s)}
+          />
         </div>
       )}
 
@@ -1917,7 +1959,7 @@ export default function App() {
          FINANCE
          ============================================ */}
       {currentScreen === 'Finance' && (
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
+        <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: COLORS.bgApp }}>
           <div
             className="px-4 pt-5 pb-6 flex items-center gap-3"
             style={{
@@ -1960,7 +2002,7 @@ export default function App() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
+          <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-24 -mt-4">
             {/* Currency view toggle — filter income/expense by USD, KHR (Riel), or both */}
             <div className="flex gap-2 mb-2.5">
               {[

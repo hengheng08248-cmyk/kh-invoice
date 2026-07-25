@@ -7,6 +7,37 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Lock the outer page: no rubber-band bounce, no accidental page scroll
+     when a screen's own content area is shorter than the viewport (e.g.
+     when the on-screen keyboard opens). Each screen manages its own
+     internal scrolling via .app-scroll below. */
+  html,
+  body {
+    height: 100%;
+    overscroll-behavior-y: none;
+  }
+
+  #root {
+    height: 100%;
+  }
+}
+
+/* Internal scroll area used by every screen's content region. Scrolls
+   smoothly on iOS and never chains scroll up to the locked page body. */
+.app-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Keyboard lock: iOS Safari auto-zooms the whole page when a focused
+   input's font-size is under 16px. Forcing 16px here (visual size is
+   controlled separately in each component) stops that zoom-in/zoom-out
+   jump completely, on every text field, textarea and select in the app. */
+input,
+select,
+textarea {
+  font-size: 16px !important;
 }
 
 /* Report → Save PDF: print only the report content, nothing else. */
