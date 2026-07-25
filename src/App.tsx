@@ -41,7 +41,7 @@ import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
 import InstallScreen from './components/InstallScreen';
 import FeatureBanner from './components/FeatureBanner';
 import AuthFeatureCarousel from './components/AuthFeatureCarousel';
-import logoIcon from './assets/logo-icon.png';
+import logoIcon from './assets/logo-icon.svg';
 
 
 
