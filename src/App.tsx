@@ -39,6 +39,7 @@ import AccountScreen from './components/AccountScreen';
 import ReportScreen from './components/ReportScreen';
 import { COLORS, khmerFont, latinFont, DEFAULT_UNITS } from './lib/theme';
 import InstallScreen from './components/InstallScreen';
+import FeatureBanner from './components/FeatureBanner';
 import AuthFeatureCarousel from './components/AuthFeatureCarousel';
 import logoIcon from './assets/logo-icon.svg';
 
@@ -1457,6 +1458,32 @@ export default function App() {
             </div>
           )}
 
+          {/* Install App banner */}
+          {showInstallBanner && (
+            <div className="mx-3.5 mt-3 flex items-center gap-2.5 p-3 rounded-2xl" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(12,68,124,0.1)', border: `1px solid ${COLORS.border}` }}>
+              <img src="/icon-192.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
+                  {lang === 'KH' ? 'ដំឡើង KH Invoice ជា App' : 'Install KH Invoice App'}
+                </p>
+                <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                  {lang === 'KH' ? 'បើកលឿន ប្រើក្រៅបណ្តាញបាន' : 'Faster access, works offline'}
+                </p>
+              </div>
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg font-bold text-white text-xs flex-shrink-0"
+                style={{ backgroundColor: COLORS.gold }}
+              >
+                <Download size={13} color="#FFFFFF" strokeWidth={2.5} />
+                {lang === 'KH' ? 'ដំឡើង' : 'Install'}
+              </button>
+              <button onClick={dismissInstallBanner} aria-label="Dismiss" className="flex-shrink-0">
+                <X size={16} color={COLORS.muted} strokeWidth={2} />
+              </button>
+            </div>
+          )}
+
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-3.5 pb-24">
             {/* Balance card */}
@@ -1657,53 +1684,8 @@ export default function App() {
               </div>
             )}
 
-            {/* Install App banner — blends seamlessly with the app's gradient style */}
-            {showInstallBanner && (
-              <div
-                className="mt-2.5 rounded-2xl p-4 relative overflow-hidden"
-                style={{
-                  background: `linear-gradient(135deg, ${COLORS.navyGradientStart} 0%, ${COLORS.navyGradientEnd} 100%)`,
-                  boxShadow: '0 6px 18px rgba(12,68,124,0.18)',
-                }}
-              >
-                <div
-                  className="absolute rounded-full pointer-events-none"
-                  style={{ width: 130, height: 130, top: -45, right: -30, background: 'rgba(255,255,255,0.07)' }}
-                />
-                <button
-                  onClick={dismissInstallBanner}
-                  aria-label="Dismiss"
-                  className="absolute top-3 right-3 z-10"
-                >
-                  <X size={16} color="rgba(255,255,255,0.7)" strokeWidth={2} />
-                </button>
-                <div className="flex items-center gap-3 relative pr-5">
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}
-                  >
-                    <Download size={22} color="#FFFFFF" strokeWidth={2} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13.5px] font-bold text-white leading-tight">
-                      {lang === 'KH' ? 'ដំឡើង KH Invoice ជា App' : 'Install KH Invoice App'}
-                    </p>
-                    <p className="text-[11px] text-white/75 leading-relaxed mt-0.5">
-                      {lang === 'KH'
-                        ? 'បើកលឿន ប្រើក្រៅបណ្តាញបាន និងងាយស្រួលជាងមុន'
-                        : 'Faster access, works offline, and more convenient'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleInstallClick}
-                  className="w-full mt-3 py-2.5 rounded-xl font-bold text-xs relative"
-                  style={{ backgroundColor: '#FFFFFF', color: COLORS.navy }}
-                >
-                  {lang === 'KH' ? 'ដំឡើងឥឡូវនេះ' : 'Install Now'}
-                </button>
-              </div>
-            )}
+            {/* Feature Banner — auto-play educational tips */}
+            <FeatureBanner lang={lang} onNavigate={(s) => setCurrentScreen(s)} />
 
             {/* Quick Actions */}
             <p className="text-sm font-bold mt-5 mb-2" style={{ color: COLORS.navy }}>

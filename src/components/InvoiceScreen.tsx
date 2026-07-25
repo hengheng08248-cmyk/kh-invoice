@@ -957,7 +957,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
 
               {qrCodeUrl && (
                 <div className="pt-3 border-t border-gray-200 flex flex-col items-center justify-center bg-slate-50 rounded-xl p-3">
-                  <img src={qrCodeUrl} alt="Payment QR" className="w-24 h-24 rounded-lg bg-white p-1 border shadow-md" />
+                  <img src={qrCodeUrl} alt="Payment QR" className="w-24 h-24 rounded-lg bg-white p-1 border shadow-md" crossOrigin="anonymous" />
                   <p className="text-[9px] text-slate-700 font-black tracking-wider mt-2 uppercase">{tr('ស្កេន QR ដើម្បីទូទាត់ប្រាក់', 'SCAN QR CODE TO PAY')}</p>
                 </div>
               )}
@@ -972,7 +972,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 px-4" onClick={() => setShowQR(false)}>
           <div className="bg-white rounded-2xl p-5 max-w-xs w-full text-center" onClick={(e) => e.stopPropagation()}>
             <p className="text-sm font-bold mb-3 text-slate-800">{tr('ស្កេន QR ដើម្បីបង់ប្រាក់', 'Scan QR to Pay')}</p>
-            <img src={qrCodeUrl} alt="Payment QR" className="w-48 h-48 mx-auto rounded-xl border" />
+            <img src={qrCodeUrl} alt="Payment QR" className="w-48 h-48 mx-auto rounded-xl border" crossOrigin="anonymous" />
           </div>
         </div>
       )}
