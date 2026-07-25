@@ -454,25 +454,25 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp, ...khmerFont }}>
-      {/* Upper header navigation */}
-      <div className="px-4 pt-5 pb-4 flex items-center gap-3" style={{ background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})` }}>
-        <button onClick={onBack} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-          <ArrowLeft size={INLINE} color="#FFFFFF" strokeWidth={2} />
-        </button>
-        <div>
-          <p className="text-white font-bold text-sm">{tr('វិក្កយបត្រ', 'Invoice Management')}</p>
-          <p className="text-white/70 text-xs">{tr('គ្រប់គ្រង និងកែសម្រួលវិក្កយបត្រ', 'Manage and view details')}</p>
+    <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: COLORS.bgApp, ...khmerFont }}>
+      {/* Upper header navigation — Edit/Preview toggle lives inside this
+          banner (fixed, never scrolls) instead of as a separate bar below it */}
+      <div className="px-4 pt-5 pb-4 flex-shrink-0" style={{ background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})` }}>
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={onBack} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <ArrowLeft size={INLINE} color="#FFFFFF" strokeWidth={2} />
+          </button>
+          <div>
+            <p className="text-white font-bold text-sm">{tr('វិក្កយបត្រ', 'Invoice Management')}</p>
+            <p className="text-white/70 text-xs">{tr('គ្រប់គ្រង និងកែសម្រួលវិក្កយបត្រ', 'Manage and view details')}</p>
+          </div>
         </div>
-      </div>
 
-      {/* Tabs Menu */}
-      <div className="px-4 pt-3">
-        <div className="flex rounded-xl border p-1 gap-1 bg-gray-100" style={{ borderColor: COLORS.border }}>
+        <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}>
           <button
             onClick={() => setTab('edit')}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-bold transition-all"
-            style={{ backgroundColor: tab === 'edit' ? COLORS.invoice : 'transparent', color: tab === 'edit' ? '#FFF' : COLORS.muted }}
+            style={{ backgroundColor: tab === 'edit' ? '#FFFFFF' : 'transparent', color: tab === 'edit' ? COLORS.invoice : '#FFFFFF' }}
           >
             <Pencil size={INLINE} strokeWidth={2} />
             {tr('កែសម្រួល', 'Edit')}
@@ -480,7 +480,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
           <button
             onClick={() => setTab('preview')}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-bold transition-all"
-            style={{ backgroundColor: tab === 'preview' ? COLORS.invoice : 'transparent', color: tab === 'preview' ? '#FFF' : COLORS.muted }}
+            style={{ backgroundColor: tab === 'preview' ? '#FFFFFF' : 'transparent', color: tab === 'preview' ? COLORS.invoice : '#FFFFFF' }}
           >
             <Eye size={INLINE} strokeWidth={2} />
             {tr('មើល', 'Preview')}
@@ -489,9 +489,53 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       </div>
 
       {/* Content Body */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="app-scroll flex-1 overflow-y-auto p-4">
         {tab === 'edit' ? (
           <div className="space-y-3">
+            {/* Customer Info */}
+            <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
+              <div className="flex items-center gap-2 mb-3">
+                <IconBadge icon={User} size={INLINE} tint="invoice" shape="rounded" />
+                <p className="text-xs font-bold text-gray-500">{tr('ព័ត៌មានអតិថិជន', 'Customer Info')}</p>
+              </div>
+              <input
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder={tr('ឈ្មោះអតិថិជន', 'Customer name')}
+                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none mb-2"
+                style={inputStyle}
+              />
+              <input
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder={tr('លេខទូរស័ព្ទ', 'Phone number')}
+                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Currency — chosen right after customer info, before any price is typed */}
+            <div className="bg-white rounded-2xl p-3.5 border" style={{ borderColor: COLORS.border }}>
+              <label className="text-xs font-semibold block mb-1.5 text-gray-700">{tr('រូបិយប័ណ្ណ', 'Currency')}</label>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setCurrency('USD')}
+                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
+                  style={{ backgroundColor: currency === 'USD' ? COLORS.invoice : '#FFF', color: currency === 'USD' ? '#FFF' : '#333', borderColor: COLORS.border }}
+                >
+                  USD
+                </button>
+                <button
+                  onClick={() => setCurrency('KHR')}
+                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
+                  style={{ backgroundColor: currency === 'KHR' ? COLORS.invoice : '#FFF', color: currency === 'KHR' ? '#FFF' : '#333', borderColor: COLORS.border }}
+                >
+                  KHR
+                </button>
+              </div>
+            </div>
+
             {/* Identity Info */}
             <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
               <div className="flex items-center gap-2 mb-3">
@@ -523,29 +567,6 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                   />
                 </div>
               </div>
-            </div>
-
-            {/* Customer Info */}
-            <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
-              <div className="flex items-center gap-2 mb-3">
-                <IconBadge icon={User} size={INLINE} tint="invoice" shape="rounded" />
-                <p className="text-xs font-bold text-gray-500">{tr('ព័ត៌មានអតិថិជន', 'Customer Info')}</p>
-              </div>
-              <input
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder={tr('ឈ្មោះអតិថិជន', 'Customer name')}
-                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none mb-2"
-                style={inputStyle}
-              />
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder={tr('លេខទូរស័ព្ទ', 'Phone number')}
-                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none"
-                style={inputStyle}
-              />
             </div>
 
             {/* Items List */}
@@ -670,27 +691,6 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                   </div>
                 </div>
               ))}
-            </div>
-
-            {/* Currency — placed above the payment section on its own */}
-            <div className="bg-white rounded-2xl p-3.5 border" style={{ borderColor: COLORS.border }}>
-              <label className="text-xs font-semibold block mb-1.5 text-gray-700">{tr('រូបិយប័ណ្ណ', 'Currency')}</label>
-              <div className="flex gap-1.5">
-                <button
-                  onClick={() => setCurrency('USD')}
-                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
-                  style={{ backgroundColor: currency === 'USD' ? COLORS.invoice : '#FFF', color: currency === 'USD' ? '#FFF' : '#333', borderColor: COLORS.border }}
-                >
-                  USD
-                </button>
-                <button
-                  onClick={() => setCurrency('KHR')}
-                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
-                  style={{ backgroundColor: currency === 'KHR' ? COLORS.invoice : '#FFF', color: currency === 'KHR' ? '#FFF' : '#333', borderColor: COLORS.border }}
-                >
-                  KHR
-                </button>
-              </div>
             </div>
 
             {/* Payment card — collapsed by default, "+" opens the panel */}

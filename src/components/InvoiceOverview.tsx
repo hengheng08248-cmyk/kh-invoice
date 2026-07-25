@@ -360,7 +360,7 @@ export default function InvoiceOverview({
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp, ...khmerFont }}>
+    <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: COLORS.bgApp, ...khmerFont }}>
       {/* Header */}
       <div
         className="px-4 pt-5 pb-4 flex items-center gap-3"
@@ -436,7 +436,7 @@ export default function InvoiceOverview({
       </div>
 
       {/* Invoice list */}
-      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-6">
+      <div className="app-scroll flex-1 overflow-y-auto px-4 pt-3 pb-6">
         {loading ? (
           <div className="text-center py-8">
             <p className="text-sm" style={{ color: COLORS.muted }}>

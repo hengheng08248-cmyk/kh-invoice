@@ -199,7 +199,7 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
   const netKHR = data.incomeKHR - data.expenseKHR;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp }} id="report-root">
+    <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: COLORS.bgApp }} id="report-root">
       {/* Header — hidden when printing */}
       <div
         className="px-4 pt-5 pb-6 flex items-center gap-3 print:hidden"
@@ -269,7 +269,7 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
       </div>
 
       {/* Printable report body */}
-      <div className="flex-1 overflow-y-auto p-3.5 pb-24" id="report-print-area">
+      <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-24" id="report-print-area">
         <div className="hidden print:block mb-4">
           <p className="text-lg font-bold" style={{ color: COLORS.navy, ...khmerFont }}>
             {profile.business_name || tr('អាជីវកម្ម', 'Business')}

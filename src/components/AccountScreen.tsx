@@ -339,7 +339,7 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
+    <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: COLORS.bgApp }}>
       {/* Header */}
       <div
         className="px-4 pt-4 pb-4 flex items-center gap-3"
@@ -360,7 +360,7 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-2 space-y-3.5">
+      <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-24 -mt-2 space-y-3.5">
         {/* Profile photo */}
         <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
           <div className="flex items-center gap-2 mb-3">

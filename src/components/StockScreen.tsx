@@ -294,7 +294,7 @@ export default function StockScreen({ lang, onBack }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bgApp }}>
+    <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ backgroundColor: COLORS.bgApp }}>
       {/* Header */}
       <div
         className="px-4 pt-4 pb-4 flex items-center gap-3"
@@ -317,7 +317,7 @@ export default function StockScreen({ lang, onBack }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3.5 pb-24 -mt-2">
+      <div className="app-scroll flex-1 overflow-y-auto p-3.5 pb-24 -mt-2">
         {/* Low-stock alert banner */}
         {summary.lowStock > 0 && (
           <div

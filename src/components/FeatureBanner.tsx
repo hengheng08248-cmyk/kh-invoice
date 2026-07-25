@@ -1,26 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import {
   Receipt,
   Wallet,
   Package,
   BarChart3,
-  Plus,
-  Search,
-  Download,
   QrCode,
   ChevronRight,
+  ChevronLeft,
   X,
-  TrendingUp,
-  TrendingDown,
   FileDown,
-  History,
   ArrowDownCircle,
-  ArrowUpCircle,
+  Lightbulb,
 } from 'lucide-react';
-import { COLORS, latinFont, khmerFont } from '../lib/theme';
+import { COLORS } from '../lib/theme';
 
 interface Props {
   lang: 'KH' | 'EN';
+  open: boolean;
+  onClose: () => void;
   onNavigate: (screen: 'InvoiceOverview' | 'Finance' | 'Stock' | 'Report' | 'Invoice') => void;
 }
 
@@ -140,100 +137,126 @@ const TIPS: Tip[] = [
   },
 ];
 
-const AUTOPLAY_MS = 6000;
-
-export default function FeatureBanner({ lang, onNavigate }: Props) {
+/**
+ * Full-screen, manually-navigated tips guide.
+ * Design decisions (per user request):
+ *  - Does NOT sit inline on Home anymore, and does NOT auto-play — it only
+ *    opens when the user taps the "Tips" entry point, and only moves when
+ *    the user taps Next/Prev/a dot. Nothing slides on its own.
+ *  - Fills the full viewport (h-[100dvh]) with a solid light background so
+ *    it never blends into the navy header/home background.
+ */
+export default function FeatureBanner({ lang, open, onClose, onNavigate }: Props) {
   const tr = (kh: string, en: string) => (lang === 'KH' ? kh : en);
   const [active, setActive] = useState(0);
-  const [dismissed, setDismissed] = useState(false);
-  const [paused, setPaused] = useState(false);
 
-  const next = useCallback(() => {
-    setActive((s) => (s + 1) % TIPS.length);
-  }, []);
-
-  useEffect(() => {
-    if (dismissed) return;
-    if (paused) return;
-    const t = setInterval(next, AUTOPLAY_MS);
-    return () => clearInterval(t);
-  }, [next, dismissed, paused]);
-
-  if (dismissed) return null;
+  if (!open) return null;
 
   const tip = TIPS[active];
   const Icon = tip.icon;
+  const isFirst = active === 0;
+  const isLast = active === TIPS.length - 1;
 
   return (
     <div
-      className="mx-3.5 mt-3 rounded-2xl overflow-hidden relative"
-      style={{
-        background: `linear-gradient(135deg, ${COLORS.navyGradientStart} 0%, ${COLORS.navyGradientEnd} 100%)`,
-        boxShadow: '0 4px 14px rgba(12,68,124,0.18)',
-      }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      className="fixed inset-0 z-50 h-[100dvh] flex flex-col overflow-hidden"
+      style={{ backgroundColor: COLORS.bgApp }}
     >
-      {/* Decorative glow */}
+      {/* Header */}
       <div
-        className="absolute rounded-full pointer-events-none"
-        style={{ width: 120, height: 120, top: -40, right: -30, background: 'rgba(255,255,255,0.06)' }}
-      />
-
-      <button
-        onClick={() => setDismissed(true)}
-        aria-label={tr('បិទ', 'Dismiss')}
-        className="absolute top-2 right-2 z-10 flex items-center justify-center"
-        style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.18)' }}
+        className="px-4 pt-4 pb-4 flex items-center justify-between flex-shrink-0"
+        style={{ background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})` }}
       >
-        <X size={14} color="#FFFFFF" strokeWidth={2} />
-      </button>
-
-      <div className="flex items-start gap-3 p-3.5 relative">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}
+        <div className="flex items-center gap-2">
+          <Lightbulb size={18} color="#FFFFFF" strokeWidth={2} />
+          <p className="text-sm font-bold text-white">{tr('គន្លឹះប្រើប្រាស់', 'App Tips')}</p>
+        </div>
+        <button
+          onClick={onClose}
+          aria-label={tr('បិទ', 'Close')}
+          className="flex items-center justify-center"
+          style={{ width: 30, height: 30, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.18)' }}
         >
-          <Icon size={22} color="#FFFFFF" strokeWidth={2} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white">
-            {tr(tip.titleKh, tip.titleEn)}
-          </p>
-          <p className="text-[11px] text-white/80 leading-relaxed mt-0.5">
-            {tr(tip.descKh, tip.descEn)}
-          </p>
-          <p className="text-[10px] text-white/65 leading-relaxed mt-1">
-            {tr(tip.stepKh, tip.stepEn)}
-          </p>
-          {tip.ctaScreen && (
-            <button
-              onClick={() => onNavigate(tip.ctaScreen!)}
-              className="mt-2 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#FFFFFF' }}
-            >
-              {tr(tip.ctaKh, tip.ctaEn)}
-              <ChevronRight size={12} color="#FFFFFF" strokeWidth={2.5} />
-            </button>
-          )}
-        </div>
+          <X size={16} color="#FFFFFF" strokeWidth={2.5} />
+        </button>
       </div>
 
-      {/* Progress dots */}
-      <div className="flex gap-1.5 px-3.5 pb-2.5 justify-center">
-        {TIPS.map((_, i) => (
+      {/* Content — locked in place, no auto movement */}
+      <div className="app-scroll flex-1 overflow-y-auto flex flex-col items-center justify-center px-6 py-6">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: tip.iconBg }}
+        >
+          <Icon size={30} color={tip.iconColor} strokeWidth={2} />
+        </div>
+        <p className="text-lg font-bold text-center mt-4" style={{ color: COLORS.navy }}>
+          {tr(tip.titleKh, tip.titleEn)}
+        </p>
+        <p className="text-sm text-center leading-relaxed mt-2" style={{ color: COLORS.muted }}>
+          {tr(tip.descKh, tip.descEn)}
+        </p>
+        <div
+          className="mt-4 px-4 py-3 rounded-xl text-xs leading-relaxed text-center"
+          style={{ backgroundColor: '#FFFFFF', border: `1px solid ${COLORS.border}`, color: COLORS.navy }}
+        >
+          {tr(tip.stepKh, tip.stepEn)}
+        </div>
+        {tip.ctaScreen && (
           <button
-            key={i}
-            onClick={() => setActive(i)}
-            aria-label={`Tip ${i + 1}`}
-            className="rounded-full transition-all duration-300"
-            style={{
-              width: active === i ? 18 : 6,
-              height: 6,
-              backgroundColor: active === i ? COLORS.accentGold : 'rgba(255,255,255,0.35)',
+            onClick={() => {
+              onNavigate(tip.ctaScreen!);
+              onClose();
             }}
-          />
-        ))}
+            className="mt-5 inline-flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white"
+            style={{ backgroundColor: COLORS.navy }}
+          >
+            {tr(tip.ctaKh, tip.ctaEn)}
+            <ChevronRight size={14} color="#FFFFFF" strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
+
+      {/* Manual navigation — dots + prev/next. Nothing moves without a tap. */}
+      <div className="flex-shrink-0 px-6 pb-6 pt-2">
+        <div className="flex gap-1.5 justify-center mb-4">
+          {TIPS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              aria-label={`Tip ${i + 1}`}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: active === i ? 18 : 6,
+                height: 6,
+                backgroundColor: active === i ? COLORS.navy : COLORS.border,
+              }}
+            />
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActive((s) => Math.max(0, s - 1))}
+            disabled={isFirst}
+            className="flex-1 flex items-center justify-center gap-1 py-3 rounded-xl text-sm font-bold"
+            style={{
+              backgroundColor: '#FFFFFF',
+              border: `1px solid ${COLORS.border}`,
+              color: isFirst ? COLORS.muted : COLORS.navy,
+              opacity: isFirst ? 0.5 : 1,
+            }}
+          >
+            <ChevronLeft size={16} strokeWidth={2.5} />
+            {tr('មុន', 'Prev')}
+          </button>
+          <button
+            onClick={() => (isLast ? onClose() : setActive((s) => Math.min(TIPS.length - 1, s + 1)))}
+            className="flex-1 flex items-center justify-center gap-1 py-3 rounded-xl text-sm font-bold text-white"
+            style={{ backgroundColor: COLORS.navy }}
+          >
+            {isLast ? tr('រួចរាល់', 'Done') : tr('បន្ទាប់', 'Next')}
+            {!isLast && <ChevronRight size={16} strokeWidth={2.5} />}
+          </button>
+        </div>
       </div>
     </div>
   );
