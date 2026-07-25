@@ -192,11 +192,34 @@ export default function InvoiceOverview({
       amount,
       payment_date: new Date().toISOString().slice(0, 10),
     });
-    setSettleBusy(false);
     if (error) {
+      setSettleBusy(false);
       setSettleError(error.message);
       return;
     }
+
+    // Keep the linked Finance income row (source='invoice') in sync with
+    // the invoice's new total paid amount, same as saving from the invoice
+    // screen — so this shows up in Home/Finance without a manual entry.
+    const { data: userData } = await supabase.auth.getUser();
+    const newPaidTotal = settleModal.paid_amount + amount;
+    await supabase.from('transactions').delete().eq('reference_id', settleModal.id).eq('source', 'invoice');
+    if (userData.user && newPaidTotal > 0) {
+      await supabase.from('transactions').insert({
+        user_id: userData.user.id,
+        type: 'income',
+        transaction_date: new Date().toISOString().slice(0, 10),
+        description: `${tr('វិក្កយបត្រ', 'Invoice')} #${settleModal.invoice_number} - ${settleModal.customer_name}`,
+        quantity: 1,
+        unit: null,
+        unit_price: newPaidTotal,
+        currency: settleModal.currency,
+        source: 'invoice',
+        reference_id: settleModal.id,
+      });
+    }
+
+    setSettleBusy(false);
     setSettleModal(null);
     setSettleAmount('');
     fetchInvoices();
@@ -206,11 +229,15 @@ export default function InvoiceOverview({
     if (!deleteTarget) return;
     setDeleteBusy(true);
     const { error } = await supabase.from('invoices').delete().eq('id', deleteTarget.id);
-    setDeleteBusy(false);
     if (error) {
+      setDeleteBusy(false);
       console.error('Delete failed:', error);
       return;
     }
+    // Remove the linked Finance income row too, so a deleted invoice
+    // doesn't leave stale income behind in Home/Finance/Report.
+    await supabase.from('transactions').delete().eq('reference_id', deleteTarget.id).eq('source', 'invoice');
+    setDeleteBusy(false);
     setDeleteTarget(null);
     fetchInvoices();
   };

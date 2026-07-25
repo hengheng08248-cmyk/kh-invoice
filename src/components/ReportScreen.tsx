@@ -11,6 +11,7 @@ import {
   ArrowUpCircle,
   AlertTriangle,
   CalendarDays,
+  BarChart3,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
@@ -51,6 +52,9 @@ interface ReportData {
   stockOutQty: number;
   stockMovementCount: number;
   lowStockProducts: { name: string; quantity: number; unit: string; low_stock_threshold: number }[];
+  grossProfitUSD: number;
+  grossProfitKHR: number;
+  costedItemCount: number;
 }
 
 const EMPTY_REPORT: ReportData = {
@@ -70,6 +74,9 @@ const EMPTY_REPORT: ReportData = {
   stockOutQty: 0,
   stockMovementCount: 0,
   lowStockProducts: [],
+  grossProfitUSD: 0,
+  grossProfitKHR: 0,
+  costedItemCount: 0,
 };
 
 function pad(n: number) {
@@ -113,7 +120,7 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
     let cancelled = false;
     const run = async () => {
       setLoading(true);
-      const [txRes, invRes, movRes, prodRes] = await Promise.all([
+      const [txRes, invRes, movRes, prodRes, itemsRes] = await Promise.all([
         supabase
           .from('transactions')
           .select('type, currency, amount, transaction_date')
@@ -133,6 +140,12 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
           .from('products')
           .select('name, quantity, unit, low_stock_threshold')
           .eq('is_active', true),
+        supabase
+          .from('invoice_items')
+          .select('quantity, unit_price, cost_price, invoices!inner(invoice_date, currency)')
+          .gte('invoices.invoice_date', start)
+          .lte('invoices.invoice_date', end)
+          .not('cost_price', 'is', null),
       ]);
 
       if (cancelled) return;
@@ -149,6 +162,13 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
       const mov = (movRes.data as { type: string; quantity: number }[]) || [];
       const prod =
         (prodRes.data as { name: string; quantity: number; unit: string; low_stock_threshold: number }[]) || [];
+      const costedItems =
+        (itemsRes.data as {
+          quantity: number;
+          unit_price: number;
+          cost_price: number | null;
+          invoices: { invoice_date: string; currency: string };
+        }[]) || [];
 
       const sum = (list: typeof tx, type: string, currency: string) =>
         list
@@ -157,6 +177,11 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
 
       const sumInv = (currency: string, field: 'subtotal' | 'paid_amount' | 'balance') =>
         inv.filter((i) => i.currency === currency).reduce((acc, i) => acc + Number(i[field]), 0);
+
+      const grossProfit = (currency: string) =>
+        costedItems
+          .filter((it) => it.invoices?.currency === currency)
+          .reduce((acc, it) => acc + (Number(it.unit_price) - Number(it.cost_price)) * Number(it.quantity), 0);
 
       const low = prod.filter((p) => Number(p.quantity) <= Number(p.low_stock_threshold));
 
@@ -177,6 +202,9 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
         stockOutQty: mov.filter((m) => m.type === 'out').reduce((a, m) => a + Number(m.quantity), 0),
         stockMovementCount: mov.length,
         lowStockProducts: low,
+        grossProfitUSD: grossProfit('USD'),
+        grossProfitKHR: grossProfit('KHR'),
+        costedItemCount: costedItems.length,
       });
       setLoading(false);
     };
@@ -327,6 +355,26 @@ export default function ReportScreen({ lang, profile, onBack }: Props) {
                 </p>
               </div>
             </div>
+
+            {data.costedItemCount > 0 && (
+              <div
+                className="rounded-2xl p-3.5 mb-4 flex items-center justify-between"
+                style={{ background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})` }}
+              >
+                <div className="flex items-center gap-2">
+                  <IconBadge icon={BarChart3} size={INLINE} tint="white" shape="rounded" />
+                  <div>
+                    <p className="text-xs font-bold text-white">{tr('ប្រាក់ចំណេញសរុប', 'Gross Profit')}</p>
+                    <p className="text-[10px] text-white/70 mt-0.5">
+                      {tr('គិតតែពីទំនិញភ្ជាប់ស្តុក (លក់ - តម្លៃដើម)', 'From stock-linked items only (sale − cost)')}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm font-bold text-white" style={latinFont}>
+                  {formatMoney(data.grossProfitUSD, data.grossProfitKHR)}
+                </p>
+              </div>
+            )}
 
             {/* Invoice section */}
             <p className="text-sm font-bold mb-2" style={{ color: COLORS.navy }}>

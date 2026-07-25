@@ -80,6 +80,8 @@ export default function StockScreen({ lang, onBack }: Props) {
   const [moveDate, setMoveDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [moveBusy, setMoveBusy] = useState(false);
   const [moveError, setMoveError] = useState('');
+  const [moveRecordExpense, setMoveRecordExpense] = useState(true);
+  const [moveExpenseAmount, setMoveExpenseAmount] = useState('');
 
   const [historyTarget, setHistoryTarget] = useState<Product | null>(null);
   const [movements, setMovements] = useState<Movement[]>([]);
@@ -229,6 +231,8 @@ export default function StockScreen({ lang, onBack }: Props) {
     setMoveNote('');
     setMoveDate(new Date().toISOString().slice(0, 10));
     setMoveError('');
+    setMoveRecordExpense(true);
+    setMoveExpenseAmount('');
   };
 
   const handleAddMovement = async () => {
@@ -245,19 +249,47 @@ export default function StockScreen({ lang, onBack }: Props) {
     }
     setMoveBusy(true);
     const { data: userData } = await supabase.auth.getUser();
-    const { error } = await supabase.from('stock_movements').insert({
-      product_id: moveTarget.id,
-      user_id: userData.user?.id,
-      type: moveType,
-      quantity: qty,
-      note: moveNote.trim() || null,
-      movement_date: moveDate,
-    });
-    setMoveBusy(false);
+    const { data: movementRow, error } = await supabase
+      .from('stock_movements')
+      .insert({
+        product_id: moveTarget.id,
+        user_id: userData.user?.id,
+        type: moveType,
+        quantity: qty,
+        note: moveNote.trim() || null,
+        movement_date: moveDate,
+      })
+      .select()
+      .maybeSingle();
     if (error) {
+      setMoveBusy(false);
       setMoveError(error.message);
       return;
     }
+
+    // Optionally log this restock as a Finance expense too — linked to the
+    // stock movement so it can never be duplicated, and so it shows up in
+    // Home/Finance/Report automatically instead of needing a second manual
+    // entry. Only offered for stock-IN (purchases), not stock-OUT/adjust.
+    if (moveType === 'in' && moveRecordExpense && userData.user && movementRow) {
+      const expenseAmount = parseFloat(moveExpenseAmount) || qty * moveTarget.cost_price;
+      if (expenseAmount > 0) {
+        await supabase.from('transactions').insert({
+          user_id: userData.user.id,
+          type: 'expense',
+          transaction_date: moveDate,
+          description: `${tr('ទិញស្តុក', 'Stock purchase')} - ${moveTarget.name}`,
+          quantity: 1,
+          unit: null,
+          unit_price: expenseAmount,
+          currency: moveTarget.currency,
+          source: 'stock',
+          reference_id: movementRow.id,
+        });
+      }
+    }
+
+    setMoveBusy(false);
     setMoveTarget(null);
     fetchProducts();
   };
@@ -696,6 +728,42 @@ export default function StockScreen({ lang, onBack }: Props) {
               className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none mb-3"
               style={inputStyle}
             />
+
+            {moveType === 'in' && (
+              <div className="rounded-xl border p-3 mb-3" style={{ borderColor: COLORS.border }}>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={moveRecordExpense}
+                    onChange={(e) => setMoveRecordExpense(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-xs font-semibold" style={{ color: COLORS.navy }}>
+                    {tr('កត់ត្រាជាចំណាយក្នុងហិរញ្ញវត្ថុផងដែរ', 'Also record this as a Finance expense')}
+                  </span>
+                </label>
+                {moveRecordExpense && (
+                  <>
+                    <p className="text-[10px] mt-1.5 mb-1.5" style={{ color: COLORS.muted }}>
+                      {tr('ទុកទទេ ដើម្បីគណនាស្វ័យប្រវត្តិពី តម្លៃដើម × ចំនួន', 'Leave blank to auto-calculate from cost price × quantity')}
+                    </p>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={moveExpenseAmount}
+                      onChange={(e) => setMoveExpenseAmount(e.target.value)}
+                      placeholder={
+                        moveTarget
+                          ? String((parseFloat(moveQty) || 0) * moveTarget.cost_price || '')
+                          : '0'
+                      }
+                      className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                      style={inputStyle}
+                    />
+                  </>
+                )}
+              </div>
+            )}
 
             {moveError && (
               <p className="text-xs mb-2" style={{ color: COLORS.danger }}>

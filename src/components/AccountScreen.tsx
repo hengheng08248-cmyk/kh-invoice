@@ -41,6 +41,7 @@ interface Profile {
   qr_code_url: string | null;
   avatar_url: string | null;
   subscription_qr_url: string | null;
+  stock_module_enabled: boolean | null;
 }
 
 interface Props {
@@ -275,6 +276,20 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
     if (data) onProfileUpdated(data as Profile);
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 2000);
+  };
+
+  const [stockToggleBusy, setStockToggleBusy] = useState(false);
+  const handleToggleStockModule = async () => {
+    setStockToggleBusy(true);
+    const nextValue = !(profile.stock_module_enabled ?? true);
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ stock_module_enabled: nextValue })
+      .eq('id', profile.id)
+      .select()
+      .maybeSingle();
+    setStockToggleBusy(false);
+    if (!error && data) onProfileUpdated(data as Profile);
   };
 
   const handleQrUpload = async (rawFile: File) => {
@@ -589,6 +604,33 @@ export default function AccountScreen({ lang, profile, onBack, onLogout, onLangT
             style={{ backgroundColor: COLORS.navy }}
           >
             {lang === 'KH' ? 'ខ្មែរ' : 'EN'}
+          </button>
+        </div>
+
+        {/* Stock module toggle — off for service businesses with no inventory */}
+        <div className="bg-white rounded-2xl p-4 flex items-center justify-between" style={{ boxShadow: '0 1px 3px rgba(12,68,124,0.08), 0 4px 12px rgba(12,68,124,0.06)', borderLeft: `4px solid ${COLORS.account}` }}>
+          <div className="flex items-center gap-2 pr-2">
+            <IconBadge icon={Building2} size={INLINE} tint="navy" shape="rounded" />
+            <div>
+              <p className="text-xs font-bold" style={{ color: COLORS.navy }}>
+                {tr('ម៉ូឌុលស្តុកទំនិញ', 'Stock Module')}
+              </p>
+              <p className="text-[10px] mt-0.5" style={{ color: COLORS.muted }}>
+                {tr('បិទប្រសិនបើអាជីវកម្មរបស់អ្នកជាសេវាកម្ម មិនមានស្តុកទំនិញ', 'Turn off if your business is service-based with no inventory')}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleToggleStockModule}
+            disabled={stockToggleBusy}
+            aria-label={tr('ប្តូរម៉ូឌុលស្តុក', 'Toggle stock module')}
+            className="w-11 h-6 rounded-full flex items-center px-0.5 flex-shrink-0 transition-colors"
+            style={{ backgroundColor: (profile.stock_module_enabled ?? true) ? COLORS.success : COLORS.border }}
+          >
+            <div
+              className="w-5 h-5 rounded-full bg-white transition-transform"
+              style={{ transform: (profile.stock_module_enabled ?? true) ? 'translateX(20px)' : 'translateX(0)' }}
+            />
           </button>
         </div>
 

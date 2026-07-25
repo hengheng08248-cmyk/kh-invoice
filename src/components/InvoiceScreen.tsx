@@ -41,6 +41,7 @@ interface Product {
   name: string;
   unit: string;
   sell_price: number;
+  cost_price: number;
   quantity: number;
 }
 
@@ -128,7 +129,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       });
     supabase
       .from('products')
-      .select('id, name, unit, sell_price, quantity')
+      .select('id, name, unit, sell_price, cost_price, quantity')
       .eq('is_active', true)
       .order('name')
       .then(({ data, error }) => {
@@ -300,6 +301,9 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
       unit_price: parseFloat(i.unit_price) || 0,
       unit: i.unit,
       product_id: i.product_id || null,
+      // Snapshot cost at time of sale so profit stays accurate even if the
+      // product's cost_price changes later.
+      cost_price: i.product_id ? products.find((p) => p.id === i.product_id)?.cost_price ?? null : null,
     }));
 
     let currentInvoiceId = invoiceId;
@@ -372,6 +376,30 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
         amount: paidVal,
         note: paymentNote.trim() || null,
         payment_date: paymentDate,
+      });
+    }
+
+    // Auto-link this invoice's paid amount into Finance income so it shows
+    // up in Home/Finance/Report totals without re-entering it by hand.
+    // One linked row per invoice (kept in sync by reference_id + source),
+    // removed entirely if the invoice no longer has any payment recorded.
+    await supabase
+      .from('transactions')
+      .delete()
+      .eq('reference_id', currentInvoiceId)
+      .eq('source', 'invoice');
+    if (paidVal > 0) {
+      await supabase.from('transactions').insert({
+        user_id: userData.user!.id,
+        type: 'income',
+        transaction_date: paymentDate || invoiceDate,
+        description: `${tr('វិក្កយបត្រ', 'Invoice')} #${invoiceNumber ?? ''} - ${customerName.trim()}`.trim(),
+        quantity: 1,
+        unit: null,
+        unit_price: paidVal,
+        currency,
+        source: 'invoice',
+        reference_id: currentInvoiceId,
       });
     }
 
