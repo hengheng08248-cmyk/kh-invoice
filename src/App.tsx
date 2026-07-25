@@ -1096,50 +1096,58 @@ export default function App() {
          SIGN UP
          ============================================ */}
       {currentScreen === 'SignUp' && (
-        <div className="flex justify-center items-center p-4 min-h-[85vh]">
-          <div
-            className="w-full max-w-sm rounded-2xl overflow-hidden bg-white"
-            style={{ boxShadow: '0 6px 20px rgba(24,41,62,0.07)' }}
-          >
-            <div
-              className="flex flex-col items-center p-6"
-              style={{
-                background: `linear-gradient(180deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})`,
-              }}
+        <div
+          className="flex flex-col justify-center items-center p-4 min-h-[85vh]"
+          style={{
+            background: `radial-gradient(120% 90% at 50% 0%, ${COLORS.navyTint} 0%, ${COLORS.bgApp} 60%, ${COLORS.bgApp} 100%)`,
+          }}
+        >
+          {/* Logo — no card, big and centered, description below */}
+          <div className="flex flex-col items-center mt-2 mb-1">
+            <img
+              src={logoIcon}
+              alt="KH Invoice"
+              className="w-24 h-24 object-contain"
+              style={{ filter: 'drop-shadow(0 10px 18px rgba(12,68,124,0.22))' }}
+            />
+            <span
+              className="text-2xl font-extrabold tracking-wide mt-2"
+              style={{ color: COLORS.navy, ...latinFont }}
             >
-              <IconBadge icon={Receipt} size={ACTION} tint="gold" shape="rounded" />
-              <span
-                className="text-2xl font-extrabold text-white tracking-wide mt-1.5"
-                style={latinFont}
-              >
-                KH INVOICE
-              </span>
-              <span className="text-xs text-white/75 text-center mt-1 leading-relaxed">
-                {t.tagline}
-              </span>
-            </div>
+              KH INVOICE
+            </span>
+            <span
+              className="text-xs text-center mt-1 leading-relaxed max-w-[260px]"
+              style={{ color: COLORS.muted }}
+            >
+              {t.tagline}
+            </span>
+          </div>
 
-            <div className="flex items-center justify-center gap-2 mt-4">
+          <div
+            className="w-full max-w-sm rounded-3xl overflow-hidden bg-white mt-4"
+            style={{ boxShadow: '0 10px 28px rgba(24,41,62,0.10)', border: `1px solid ${COLORS.border}` }}
+          >
+            <div className="flex items-center justify-center gap-2 pt-5">
               <div
-                className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                style={{ backgroundColor: COLORS.gold }}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold transition-colors"
+                style={{ backgroundColor: COLORS.navy }}
               >
                 1
               </div>
               <div
-                className="w-14 h-0.5"
-                style={{ backgroundColor: signUpStep === 2 ? COLORS.gold : COLORS.border }}
+                className="w-14 h-0.5 rounded-full transition-colors"
+                style={{ backgroundColor: signUpStep === 2 ? COLORS.navy : COLORS.border }}
               />
               <div
-                className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                style={{ backgroundColor: signUpStep === 2 ? COLORS.gold : COLORS.border }}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold transition-colors"
+                style={{ backgroundColor: signUpStep === 2 ? COLORS.navy : COLORS.border, color: signUpStep === 2 ? '#FFFFFF' : COLORS.muted }}
               >
                 2
               </div>
             </div>
 
-            <div className="p-5">
-              {signUpStep === 1 ? (
+            <div className="p-6">              {signUpStep === 1 ? (
                 <div>
                   <h2 className="text-lg font-bold mb-3" style={{ color: COLORS.navy }}>
                     {lang === 'KH' ? 'ព័ត៌មានអាជីវកម្ម' : 'Business Info'}
