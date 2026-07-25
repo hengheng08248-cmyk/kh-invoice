@@ -955,14 +955,23 @@ export default function App() {
         >
           {/* Logo — no card, big and centered, description below */}
           <div className="flex flex-col items-center mt-2 mb-1">
-            <img
-              src={logoIcon}
-              alt="KH Invoice"
-              className="w-28 h-28 object-contain"
-              style={{ filter: 'drop-shadow(0 10px 18px rgba(12,68,124,0.22))' }}
-            />
+            <div
+              className="rounded-[30px] flex items-center justify-center relative"
+              style={{
+                width: 132,
+                height: 132,
+                background: `linear-gradient(150deg, #FFFFFF 0%, ${COLORS.navyTint} 100%)`,
+                boxShadow: '0 14px 32px rgba(12,68,124,0.18)',
+              }}
+            >
+              <img
+                src={logoIcon}
+                alt="KH Invoice"
+                className="w-[92px] h-[92px] object-contain"
+              />
+            </div>
             <span
-              className="text-[26px] font-extrabold tracking-wide mt-2"
+              className="text-[28px] font-extrabold tracking-wide mt-3"
               style={{ color: COLORS.navy, ...latinFont }}
             >
               KH INVOICE
@@ -1104,14 +1113,23 @@ export default function App() {
         >
           {/* Logo — no card, big and centered, description below */}
           <div className="flex flex-col items-center mt-2 mb-1">
-            <img
-              src={logoIcon}
-              alt="KH Invoice"
-              className="w-24 h-24 object-contain"
-              style={{ filter: 'drop-shadow(0 10px 18px rgba(12,68,124,0.22))' }}
-            />
+            <div
+              className="rounded-[26px] flex items-center justify-center relative"
+              style={{
+                width: 108,
+                height: 108,
+                background: `linear-gradient(150deg, #FFFFFF 0%, ${COLORS.navyTint} 100%)`,
+                boxShadow: '0 12px 28px rgba(12,68,124,0.18)',
+              }}
+            >
+              <img
+                src={logoIcon}
+                alt="KH Invoice"
+                className="w-[76px] h-[76px] object-contain"
+              />
+            </div>
             <span
-              className="text-2xl font-extrabold tracking-wide mt-2"
+              className="text-2xl font-extrabold tracking-wide mt-3"
               style={{ color: COLORS.navy, ...latinFont }}
             >
               KH INVOICE
