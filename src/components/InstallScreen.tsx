@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { COLORS, khmerFont, latinFont } from '../lib/theme';
 import { IconBadge } from './IconBadge';
+import logoIcon from '../assets/logo-icon.png';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -166,63 +167,39 @@ export default function InstallScreen({ lang, onLangToggle, onSignIn, onSignUp, 
         </button>
       </div>
 
-      {/* Hero banner */}
-      <div className="flex flex-col items-center px-6 pt-7 pb-4 relative z-10">
+      {/* Hero — logo big & centered, no card, description below */}
+      <div className="flex flex-col items-center px-6 pt-6 pb-2 relative z-10">
         <div
-          className="rounded-[28px] px-6 py-6 flex flex-col items-center w-full max-w-sm relative overflow-hidden"
+          className="rounded-[26px] flex items-center justify-center relative"
           style={{
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.18)',
-            boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
+            width: 96,
+            height: 96,
+            background: 'rgba(255,255,255,0.94)',
+            boxShadow: '0 14px 30px rgba(0,0,0,0.22)',
           }}
         >
-          {/* Soft glow ring behind the logo mark */}
-          <div
-            className="absolute rounded-full"
-            style={{
-              width: 140,
-              height: 140,
-              top: 8,
-              background: `radial-gradient(circle, ${COLORS.accentGold}55 0%, transparent 70%)`,
-            }}
-          />
-
-          <div
-            className="w-[72px] h-[72px] rounded-[22px] flex items-center justify-center mb-3.5 relative"
-            style={{
-              background: `linear-gradient(145deg, ${COLORS.accentGold} 0%, ${COLORS.accentGoldDark} 100%)`,
-              boxShadow: `0 10px 28px ${COLORS.accentGoldDark}80, inset 0 1px 0 rgba(255,255,255,0.4)`,
-            }}
-          >
-            <Receipt size={34} color="#FFFFFF" strokeWidth={2.25} />
-          </div>
-
-          <span
-            className="text-[26px] font-extrabold text-white leading-none"
-            style={{ ...latinFont, letterSpacing: '0.06em' }}
-          >
-            KH INVOICE
-          </span>
-
-          <div
-            className="mt-2.5 px-3 py-1 rounded-full"
-            style={{ backgroundColor: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.2)' }}
-          >
-            <p className="text-[11px] font-semibold text-white/90 text-center leading-relaxed">
-              {tr(
-                'វិក្កយបត្រ និងគ្រប់គ្រងទិន្នន័យអាជីវកម្មគ្រប់ប្រភេទ',
-                'Invoices & Business Data Management'
-              )}
-            </p>
-          </div>
+          <img src={logoIcon} alt="KH Invoice" className="w-16 h-16 object-contain" />
         </div>
+
+        <span
+          className="text-[26px] font-extrabold text-white leading-none mt-3.5"
+          style={{ ...latinFont, letterSpacing: '0.06em' }}
+        >
+          KH INVOICE
+        </span>
+
+        <p className="text-[12px] font-medium text-white/80 text-center leading-relaxed mt-2 max-w-[280px]">
+          {tr(
+            'វិក្កយបត្រ និងគ្រប់គ្រងទិន្នន័យអាជីវកម្មគ្រប់ប្រភេទ',
+            'Invoices & Business Data Management'
+          )}
+        </p>
       </div>
 
       {/* Feature carousel */}
-      <div className="flex-1 px-5 relative z-10 flex flex-col justify-center">
+      <div className="flex-1 px-5 pt-4 relative z-10 flex flex-col justify-center max-h-[280px]">
         <div
-          className="rounded-3xl p-5 min-h-[220px] flex flex-col justify-center"
+          className="rounded-3xl p-5 min-h-[180px] flex flex-col justify-center"
           style={{ backgroundColor: 'rgba(255,255,255,0.95)', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}
         >
           {FEATURES.map((f, i) => (
