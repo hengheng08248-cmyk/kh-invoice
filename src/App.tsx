@@ -68,6 +68,7 @@ interface Profile {
   qr_code_url: string | null;
   avatar_url: string | null;
   subscription_qr_url: string | null;
+  stock_module_enabled: boolean | null;
 }
 
 interface Transaction {
@@ -82,6 +83,8 @@ interface Transaction {
   amount: number;
   currency: 'USD' | 'KHR';
   created_at: string;
+  source?: 'manual' | 'invoice' | 'stock';
+  reference_id?: string | null;
 }
 
 function toE164Digits(input: string) {
@@ -913,15 +916,17 @@ export default function App() {
           <Plus size={28} color="#FFFFFF" strokeWidth={2.5} />
         </button>
       </div>
-      <button onClick={() => setCurrentScreen('Stock')} className="flex flex-col items-center flex-1">
-        <IconBadge icon={Package} size={NAV} tint="stock" shape="rounded" />
-        <span
-          className="text-[10px] mt-0.5"
-          style={{ color: currentScreen === 'Stock' ? COLORS.stock : COLORS.muted, fontWeight: currentScreen === 'Stock' ? 700 : 400 }}
-        >
-          {lang === 'KH' ? 'ស្តុក' : 'Stock'}
-        </span>
-      </button>
+      {(profile?.stock_module_enabled ?? true) && (
+        <button onClick={() => setCurrentScreen('Stock')} className="flex flex-col items-center flex-1">
+          <IconBadge icon={Package} size={NAV} tint="stock" shape="rounded" />
+          <span
+            className="text-[10px] mt-0.5"
+            style={{ color: currentScreen === 'Stock' ? COLORS.stock : COLORS.muted, fontWeight: currentScreen === 'Stock' ? 700 : 400 }}
+          >
+            {lang === 'KH' ? 'ស្តុក' : 'Stock'}
+          </span>
+        </button>
+      )}
       <button onClick={() => setCurrentScreen('Account')} className="flex flex-col items-center flex-1">
         <IconBadge icon={UserIcon} size={NAV} tint="account" shape="rounded" />
         <span
@@ -939,20 +944,6 @@ export default function App() {
      ============================================ */
   return (
     <div className="min-h-screen w-full" style={{ backgroundColor: COLORS.bgApp, ...khmerFont }}>
-      {/* ---------- Auth screens lang switch ---------- */}
-      {currentScreen !== 'Home' && currentScreen !== 'Finance' && currentScreen !== 'InvoiceOverview' && currentScreen !== 'Invoice' && (
-        <div className="flex justify-end px-4 pt-3">
-          <button
-            onClick={() => setLang(lang === 'KH' ? 'EN' : 'KH')}
-            className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border text-xs font-semibold"
-            style={{ borderColor: COLORS.border, color: COLORS.navy }}
-          >
-            <Languages size={16} color={COLORS.navy} strokeWidth={2} />
-            {lang === 'KH' ? 'ខ្មែរ | EN' : 'EN | ខ្មែរ'}
-          </button>
-        </div>
-      )}
-
       {/* ============================================
          INSTALL / ONBOARDING
          ============================================ */}
@@ -1739,12 +1730,14 @@ export default function App() {
                   {lang === 'KH' ? 'វិក្កយបត្រ' : 'Invoice'}
                 </span>
               </button>
-              <button onClick={() => setCurrentScreen('Stock')} className="flex flex-col items-center flex-1">
-                <IconBadge icon={Package} size={ACTION} tint="stock" shape="rounded" />
-                <span className="text-xs mt-1.5" style={{ color: COLORS.navy }}>
-                  {lang === 'KH' ? 'ស្តុក' : 'Stock'}
-                </span>
-              </button>
+              {(profile?.stock_module_enabled ?? true) && (
+                <button onClick={() => setCurrentScreen('Stock')} className="flex flex-col items-center flex-1">
+                  <IconBadge icon={Package} size={ACTION} tint="stock" shape="rounded" />
+                  <span className="text-xs mt-1.5" style={{ color: COLORS.navy }}>
+                    {lang === 'KH' ? 'ស្តុក' : 'Stock'}
+                  </span>
+                </button>
+              )}
               <button
                 onClick={() => openAddModal('income')}
                 className="flex flex-col items-center flex-1"
