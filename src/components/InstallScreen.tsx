@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { COLORS, khmerFont, latinFont } from '../lib/theme';
 import { IconBadge } from './IconBadge';
-import logoIcon from '../assets/logo-icon.png';
+import logoIcon from '../assets/logo-icon.svg';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
