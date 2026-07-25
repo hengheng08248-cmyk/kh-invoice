@@ -168,21 +168,21 @@ export default function InstallScreen({ lang, onLangToggle, onSignIn, onSignUp, 
       </div>
 
       {/* Hero — logo big & centered, no card, description below */}
-      <div className="flex flex-col items-center px-6 pt-6 pb-2 relative z-10">
+      <div className="flex flex-col items-center px-6 pt-5 pb-2 relative z-10">
         <div
-          className="rounded-[26px] flex items-center justify-center relative"
+          className="rounded-[30px] flex items-center justify-center relative"
           style={{
-            width: 96,
-            height: 96,
-            background: 'rgba(255,255,255,0.94)',
-            boxShadow: '0 14px 30px rgba(0,0,0,0.22)',
+            width: 124,
+            height: 124,
+            background: 'rgba(255,255,255,0.96)',
+            boxShadow: '0 16px 36px rgba(0,0,0,0.24)',
           }}
         >
-          <img src={logoIcon} alt="KH Invoice" className="w-16 h-16 object-contain" />
+          <img src={logoIcon} alt="KH Invoice" className="w-[86px] h-[86px] object-contain" />
         </div>
 
         <span
-          className="text-[26px] font-extrabold text-white leading-none mt-3.5"
+          className="text-[30px] font-extrabold text-white leading-none mt-4"
           style={{ ...latinFont, letterSpacing: '0.06em' }}
         >
           KH INVOICE
@@ -196,16 +196,25 @@ export default function InstallScreen({ lang, onLangToggle, onSignIn, onSignUp, 
         </p>
       </div>
 
-      {/* Feature carousel */}
-      <div className="flex-1 px-5 pt-4 relative z-10 flex flex-col justify-center max-h-[280px]">
+      {/* Feature carousel — translucent glass, blends seamlessly with the hero gradient */}
+      <div className="flex-1 px-5 pt-4 relative z-10 flex flex-col justify-center max-h-[260px]">
         <div
-          className="rounded-3xl p-5 min-h-[180px] flex flex-col justify-center"
-          style={{ backgroundColor: 'rgba(255,255,255,0.95)', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}
+          className="rounded-3xl p-5 min-h-[112px] flex flex-col justify-center relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)',
+            backdropFilter: 'blur(14px)',
+            border: '1px solid rgba(255,255,255,0.18)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+          }}
         >
+          <div
+            className="absolute rounded-full pointer-events-none"
+            style={{ width: 130, height: 130, top: -45, right: -35, background: 'rgba(255,255,255,0.06)' }}
+          />
           {FEATURES.map((f, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 transition-all duration-500"
+              className="flex items-center gap-4 transition-all duration-500 relative"
               style={{
                 opacity: activeSlide === i ? 1 : 0,
                 transform: activeSlide === i ? 'translateX(0)' : 'translateX(20px)',
@@ -214,16 +223,16 @@ export default function InstallScreen({ lang, onLangToggle, onSignIn, onSignUp, 
               }}
             >
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: f.tintBg }}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}
               >
-                <f.icon size={32} color={f.color} strokeWidth={2} />
+                <f.icon size={28} color="#FFFFFF" strokeWidth={2} />
               </div>
               <div className="flex-1">
-                <p className="text-base font-bold" style={{ color: COLORS.navy }}>
+                <p className="text-[15px] font-bold text-white leading-tight">
                   {lang === 'KH' ? f.titleKh : f.titleEn}
                 </p>
-                <p className="text-xs mt-1 leading-relaxed" style={{ color: COLORS.muted }}>
+                <p className="text-[11.5px] text-white/75 mt-1 leading-relaxed">
                   {lang === 'KH' ? f.descKh : f.descEn}
                 </p>
               </div>
