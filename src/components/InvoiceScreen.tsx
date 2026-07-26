@@ -19,6 +19,8 @@ import {
   Percent,
   FileDown,
   Copy,
+  ArrowRight,
+  Check,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { IconBadge } from './IconBadge';
@@ -74,6 +76,7 @@ function fmtMoney(n: number, currency: string) {
 
 export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: Props) {
   const [tab, setTab] = useState<Tab>(editInvoiceId ? 'preview' : 'edit');
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [invoiceId, setInvoiceId] = useState<string | null>(editInvoiceId ?? null);
   const [items, setItems] = useState<InvoiceItem[]>([
     { id: genItemId(), description: '', quantity: '1', unit_price: '', unit: DEFAULT_UNITS[0], product_id: null },
@@ -405,6 +408,7 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
 
     setSaveBusy(false);
     setSaveSuccess(true);
+    setTab('preview');
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
@@ -514,88 +518,147 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
             {tr('មើល', 'Preview')}
           </button>
         </div>
+
+        {tab === 'edit' && (
+          <div className="flex items-center gap-1.5 mt-3">
+            {([1, 2, 3] as const).map((s, idx) => (
+              <div key={s} className="flex items-center flex-1 last:flex-none">
+                <button
+                  onClick={() => setStep(s)}
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 transition-colors"
+                  style={{
+                    backgroundColor: step >= s ? COLORS.gold : 'rgba(255,255,255,0.2)',
+                    color: step >= s ? '#1E3A8A' : 'rgba(255,255,255,0.7)',
+                  }}
+                >
+                  {step > s ? <Check size={12} strokeWidth={3} /> : s}
+                </button>
+                {idx < 2 && (
+                  <div className="flex-1 h-0.5 mx-1.5" style={{ backgroundColor: step > s ? COLORS.gold : 'rgba(255,255,255,0.2)' }} />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Content Body */}
       <div className="app-scroll flex-1 overflow-y-auto p-4">
         {tab === 'edit' ? (
           <div className="space-y-3">
-            {/* Customer Info */}
-            <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
-              <div className="flex items-center gap-2 mb-3">
-                <IconBadge icon={User} size={INLINE} tint="invoice" shape="rounded" />
-                <p className="text-xs font-bold text-gray-500">{tr('ព័ត៌មានអតិថិជន', 'Customer Info')}</p>
-              </div>
-              <input
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder={tr('ឈ្មោះអតិថិជន', 'Customer name')}
-                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none mb-2"
-                style={inputStyle}
-              />
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder={tr('លេខទូរស័ព្ទ', 'Phone number')}
-                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none"
-                style={inputStyle}
-              />
-            </div>
+            {step === 1 && (
+              <>
+                {/* Identity Info — date first, as requested */}
+                <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <IconBadge icon={Hash} size={INLINE} tint="invoice" shape="rounded" />
+                    <p className="text-xs font-bold text-gray-500">{tr('អត្តសញ្ញាណ', 'Identity')}</p>
+                    <span className="ml-auto text-sm font-bold" style={{ color: COLORS.navy }}>
+                      {invoiceNumber ? `#${String(invoiceNumber).padStart(6, '0')}` : tr('#ថ្មី', '#New')}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('ថ្ងៃទី', 'Date')}</label>
+                      <input
+                        type="date"
+                        value={invoiceDate}
+                        onChange={(e) => setInvoiceDate(e.target.value)}
+                        className="w-full rounded-lg border px-2.5 py-2 text-sm outline-none"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('ថ្ងៃផុតកំណត់', 'Due Date')}</label>
+                      <input
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        className="w-full rounded-lg border px-2.5 py-2 text-sm outline-none"
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            {/* Currency — chosen right after customer info, before any price is typed */}
-            <div className="bg-white rounded-2xl p-3.5 border" style={{ borderColor: COLORS.border }}>
-              <label className="text-xs font-semibold block mb-1.5 text-gray-700">{tr('រូបិយប័ណ្ណ', 'Currency')}</label>
-              <div className="flex gap-1.5">
-                <button
-                  onClick={() => setCurrency('USD')}
-                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
-                  style={{ backgroundColor: currency === 'USD' ? COLORS.invoice : '#FFF', color: currency === 'USD' ? '#FFF' : '#333', borderColor: COLORS.border }}
-                >
-                  USD
-                </button>
-                <button
-                  onClick={() => setCurrency('KHR')}
-                  className="flex-1 py-2 rounded-lg border text-xs font-bold"
-                  style={{ backgroundColor: currency === 'KHR' ? COLORS.invoice : '#FFF', color: currency === 'KHR' ? '#FFF' : '#333', borderColor: COLORS.border }}
-                >
-                  KHR
-                </button>
-              </div>
-            </div>
-
-            {/* Identity Info */}
-            <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
-              <div className="flex items-center gap-2 mb-3">
-                <IconBadge icon={Hash} size={INLINE} tint="invoice" shape="rounded" />
-                <p className="text-xs font-bold text-gray-500">{tr('អត្តសញ្ញាណ', 'Identity')}</p>
-                <span className="ml-auto text-sm font-bold" style={{ color: COLORS.navy }}>
-                  {invoiceNumber ? `#${String(invoiceNumber).padStart(6, '0')}` : tr('#ថ្មី', '#New')}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('ថ្ងៃទី', 'Date')}</label>
+                {/* Customer Info */}
+                <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <IconBadge icon={User} size={INLINE} tint="invoice" shape="rounded" />
+                    <p className="text-xs font-bold text-gray-500">{tr('ព័ត៌មានអតិថិជន', 'Customer Info')}</p>
+                  </div>
                   <input
-                    type="date"
-                    value={invoiceDate}
-                    onChange={(e) => setInvoiceDate(e.target.value)}
-                    className="w-full rounded-lg border px-2.5 py-2 text-sm outline-none"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder={tr('ឈ្មោះអតិថិជន', 'Customer name')}
+                    className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none mb-2"
+                    style={inputStyle}
+                  />
+                  <input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder={tr('លេខទូរស័ព្ទ', 'Phone number')}
+                    className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none"
                     style={inputStyle}
                   />
                 </div>
-                <div>
-                  <label className="text-xs font-semibold block mb-1 text-gray-700">{tr('ថ្ងៃផុតកំណត់', 'Due Date')}</label>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full rounded-lg border px-2.5 py-2 text-sm outline-none"
-                    style={inputStyle}
-                  />
+
+                {/* Live mini-preview — appears the moment a customer name is typed */}
+                {customerName.trim() && (
+                  <button
+                    onClick={() => setTab('preview')}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl border text-left transition-transform active:scale-[0.99]"
+                    style={{ borderColor: COLORS.border, backgroundColor: '#F8FAFC' }}
+                  >
+                    <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1E3A8A' }}>
+                      <Eye size={16} color="#FFFFFF" strokeWidth={2} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold truncate" style={{ color: COLORS.navy }}>
+                        {tr('វិក្កយបត្រសម្រាប់', 'Invoice for')} {customerName}
+                      </p>
+                      <p className="text-[10px]" style={{ color: COLORS.muted }}>
+                        {tr('ចុចដើម្បីមើលផ្ទាំងវិក្កយបត្រពេញលេញ', 'Tap to see the full invoice preview')}
+                      </p>
+                    </div>
+                    <Eye size={14} color={COLORS.muted} strokeWidth={2} />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setStep(2)}
+                  className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-white text-sm"
+                  style={{ backgroundColor: COLORS.invoice }}
+                >
+                  {tr('បន្ត', 'Continue')}
+                  <ArrowRight size={INLINE} strokeWidth={2} />
+                </button>
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                {/* Currency — chosen right before item prices are typed */}
+                <div className="bg-white rounded-2xl p-3.5 border" style={{ borderColor: COLORS.border }}>
+                  <label className="text-xs font-semibold block mb-1.5 text-gray-700">{tr('រូបិយប័ណ្ណ', 'Currency')}</label>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => setCurrency('USD')}
+                      className="flex-1 py-2 rounded-lg border text-xs font-bold"
+                      style={{ backgroundColor: currency === 'USD' ? COLORS.invoice : '#FFF', color: currency === 'USD' ? '#FFF' : '#333', borderColor: COLORS.border }}
+                    >
+                      USD
+                    </button>
+                    <button
+                      onClick={() => setCurrency('KHR')}
+                      className="flex-1 py-2 rounded-lg border text-xs font-bold"
+                      style={{ backgroundColor: currency === 'KHR' ? COLORS.invoice : '#FFF', color: currency === 'KHR' ? '#FFF' : '#333', borderColor: COLORS.border }}
+                    >
+                      KHR
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
 
             {/* Items List */}
             <div className="bg-white rounded-2xl p-4 border" style={{ borderColor: COLORS.border }}>
@@ -721,6 +784,29 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
               ))}
             </div>
 
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setStep(1)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm border"
+                    style={{ borderColor: COLORS.border, color: COLORS.navy }}
+                  >
+                    <ArrowLeft size={INLINE} strokeWidth={2} />
+                    {tr('ត្រឡប់', 'Back')}
+                  </button>
+                  <button
+                    onClick={() => setStep(3)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-white text-sm"
+                    style={{ backgroundColor: COLORS.invoice }}
+                  >
+                    {tr('បន្ត', 'Continue')}
+                    <ArrowRight size={INLINE} strokeWidth={2} />
+                  </button>
+                </div>
+              </>
+            )}
+
+            {step === 3 && (
+              <>
             {/* Payment card — collapsed by default, "+" opens the panel */}
             <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: COLORS.border }}>
               <button
@@ -857,6 +943,13 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
             {saveSuccess && <div className="p-2 bg-green-50 text-green-600 rounded-lg text-xs text-center border border-green-200">{tr('រក្សាទុកបានជោគជ័យ!', 'Saved successfully!')}</div>}
 
             <div className="flex gap-2 pb-5">
+              <button
+                onClick={() => setStep(2)}
+                className="flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl font-bold text-xs border"
+                style={{ borderColor: COLORS.border, color: COLORS.navy }}
+              >
+                <ArrowLeft size={INLINE} strokeWidth={2} />
+              </button>
               <button onClick={handleSave} disabled={saveBusy} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-white text-xs bg-slate-900">
                 <Save size={INLINE} strokeWidth={2} />
                 {saveBusy ? tr('កំពុងរក្សា...', 'Saving...') : tr('រក្សាទុក', 'Save')}
@@ -870,6 +963,8 @@ export default function InvoiceScreen({ lang, profile, onBack, editInvoiceId }: 
                 {shareBusy ? tr('កំពុងបង្កើត...', 'Sharing...') : tr('ចែករំលែក', 'Share')}
               </button>
             </div>
+              </>
+            )}
           </div>
         ) : (
           /* =========================================================

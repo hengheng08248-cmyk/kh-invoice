@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Wallet,
   AlertCircle,
-  FileText,
   Pencil,
   Trash2,
   X,
@@ -104,6 +103,7 @@ export default function InvoiceOverview({
 
   const [deleteTarget, setDeleteTarget] = useState<InvoiceRow | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [summaryCurrency, setSummaryCurrency] = useState<'USD' | 'KHR'>('USD');
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
@@ -142,19 +142,23 @@ export default function InvoiceOverview({
   }, [invoices, rangeStart, rangeEnd, search]);
 
   const summary = useMemo(() => {
-    let gross = 0;
-    let settled = 0;
-    let receivables = 0;
+    let grossUSD = 0, grossKHR = 0;
+    let settledUSD = 0, settledKHR = 0;
+    let receivablesUSD = 0, receivablesKHR = 0;
     let count = 0;
     for (const inv of filteredInvoices) {
-      gross += inv.subtotal;
-      settled += inv.paid_amount;
+      const isUSD = inv.currency === 'USD';
+      if (isUSD) grossUSD += inv.subtotal;
+      else grossKHR += inv.subtotal;
+      if (isUSD) settledUSD += inv.paid_amount;
+      else settledKHR += inv.paid_amount;
       if (inv.status !== 'paid') {
-        receivables += inv.balance;
+        if (isUSD) receivablesUSD += inv.balance;
+        else receivablesKHR += inv.balance;
       }
       count++;
     }
-    return { gross, settled, receivables, count };
+    return { grossUSD, grossKHR, settledUSD, settledKHR, receivablesUSD, receivablesKHR, count };
   }, [filteredInvoices]);
 
   // Group so fully-paid invoices move into their own section, away from
@@ -254,37 +258,6 @@ export default function InvoiceOverview({
     { key: 'month', label: tr('ខែនេះ', 'This Month') },
     { key: 'year', label: tr('ឆ្នាំនេះ', 'This Year') },
     { key: 'custom', label: tr('ផ្ទាល់ខ្លួន', 'Custom') },
-  ];
-
-  const summaryCards = [
-    {
-      label: tr('សរុបចំណូល', 'Gross Revenue'),
-      value: fmtMoney(summary.gross, 'USD'),
-      icon: TrendingUp,
-      tint: 'invoice' as const,
-      valueColor: COLORS.invoice,
-    },
-    {
-      label: tr('បានទូទាត់', 'Settled Sum'),
-      value: fmtMoney(summary.settled, 'USD'),
-      icon: Wallet,
-      tint: 'success' as const,
-      valueColor: COLORS.success,
-    },
-    {
-      label: tr('ជំពាក់នៅសល់', 'Receivables'),
-      value: fmtMoney(summary.receivables, 'USD'),
-      icon: AlertCircle,
-      tint: 'danger' as const,
-      valueColor: COLORS.danger,
-    },
-    {
-      label: tr('ចំនួនវិក្កយបត្រ', 'Invoice Count'),
-      value: String(summary.count),
-      icon: FileText,
-      tint: 'account' as const,
-      valueColor: COLORS.account,
-    },
   ];
 
   const renderInvoiceCard = (inv: InvoiceRow) => {
@@ -439,26 +412,67 @@ export default function InvoiceOverview({
         </div>
       </div>
 
-      {/* Summary cards 2x2 */}
+      {/* Financial summary — one card, flip between USD and KHR so the
+          numbers are never mixed across currencies */}
       <div className="px-4 pt-2">
-        <div className="grid grid-cols-2 gap-2.5">
-          {summaryCards.map((card) => (
-            <div
-              key={card.label}
-              className="bg-white rounded-xl p-3"
-              style={{ boxShadow: '0 2px 8px rgba(12,68,124,0.08)' }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <IconBadge icon={card.icon} size={INLINE} tint={card.tint} shape="rounded" />
-                <span className="text-xs font-semibold" style={{ color: COLORS.muted }}>
-                  {card.label}
-                </span>
-              </div>
-              <p className="text-lg font-extrabold" style={{ color: card.valueColor, ...latinFont }}>
-                {card.value}
+        <div
+          className="rounded-2xl p-4 text-white relative overflow-hidden"
+          style={{ background: `linear-gradient(135deg, ${COLORS.navyGradientStart}, ${COLORS.navyGradientEnd})` }}
+        >
+          <div className="flex items-center justify-between mb-3.5">
+            <div>
+              <p className="text-xs font-bold text-white/70">{tr('សង្ខេបហិរញ្ញវត្ថុ', 'Financial Summary')}</p>
+              <p className="text-[10px] text-white/50 mt-0.5">
+                {summary.count} {tr('វិក្កយបត្រ', 'invoices')}
               </p>
             </div>
-          ))}
+            <div className="flex rounded-full p-0.5 gap-0.5" style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}>
+              <button
+                onClick={() => setSummaryCurrency('USD')}
+                className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                style={{ backgroundColor: summaryCurrency === 'USD' ? '#FFFFFF' : 'transparent', color: summaryCurrency === 'USD' ? COLORS.invoice : '#FFFFFF' }}
+              >
+                USD
+              </button>
+              <button
+                onClick={() => setSummaryCurrency('KHR')}
+                className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                style={{ backgroundColor: summaryCurrency === 'KHR' ? '#FFFFFF' : 'transparent', color: summaryCurrency === 'KHR' ? COLORS.invoice : '#FFFFFF' }}
+              >
+                KHR
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+              <div className="flex items-center gap-1 mb-1">
+                <TrendingUp size={12} color="#FFFFFF" strokeWidth={2} />
+                <span className="text-[9px] font-semibold text-white/70">{tr('ចំណូលសរុប', 'Gross')}</span>
+              </div>
+              <p className="text-xs font-extrabold" style={latinFont}>
+                {fmtMoney(summaryCurrency === 'USD' ? summary.grossUSD : summary.grossKHR, summaryCurrency)}
+              </p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+              <div className="flex items-center gap-1 mb-1">
+                <Wallet size={12} color="#FFFFFF" strokeWidth={2} />
+                <span className="text-[9px] font-semibold text-white/70">{tr('បានទូទាត់', 'Settled')}</span>
+              </div>
+              <p className="text-xs font-extrabold" style={{ color: '#6EE7B7', ...latinFont }}>
+                {fmtMoney(summaryCurrency === 'USD' ? summary.settledUSD : summary.settledKHR, summaryCurrency)}
+              </p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+              <div className="flex items-center gap-1 mb-1">
+                <AlertCircle size={12} color="#FFFFFF" strokeWidth={2} />
+                <span className="text-[9px] font-semibold text-white/70">{tr('ជំពាក់នៅសល់', 'Owed')}</span>
+              </div>
+              <p className="text-xs font-extrabold" style={{ color: '#FCA5A5', ...latinFont }}>
+                {fmtMoney(summaryCurrency === 'USD' ? summary.receivablesUSD : summary.receivablesKHR, summaryCurrency)}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
